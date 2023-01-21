@@ -19,19 +19,20 @@ app.use(
   })
 );
 
-const username = '<mongodb username>';
-const password = '<password>';
-const cluster = '<cluster name>';
-const dbname = 'myFirstDatabase';
-
 mongoose.connect(
-  'mongodb+srv://eventsApp:<password>@clusterforeventsapp.yjih8bo.mongodb.net/?retryWrites=true&w=majority',
+  `mongodb+srv://${username}:${password}@${cluster}.mongodb.net/${dbname}?retryWrites=true&w=majority`,
   {
     useNewUrlParser: true,
     useFindAndModify: false,
     useUnifiedTopology: true,
   }
 );
+
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error: '));
+db.once('open', function () {
+  console.log('Connected successfully');
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
