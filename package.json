@@ -2,9 +2,8 @@
   "name": "events-app-api",
   "version": "1.0.0",
   "description": "",
-  "main": "router.js",
   "scripts": {
-    "start": "nodemon server.js"
+    "dev": "nodemon server.js"
   },
   "repository": {
     "type": "git",
@@ -16,12 +15,14 @@
     "url": "https://github.com/Asmaalafe55/Events-app-api/issues"
   },
   "homepage": "https://github.com/Asmaalafe55/Events-app-api#readme",
+  "type": "module",
   "dependencies": {
     "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "http-status": "^1.6.2",
+    "mongoose": "^6.8.4",
     "nodemailer": "^6.9.0"
   },
   "devDependencies": {

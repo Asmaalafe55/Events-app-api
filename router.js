@@ -1,3 +1,10 @@
-const router = require('express').Router();
+import emailRegistration from './controllers/emailRegistration.js';
+import getEvents from './controllers/getEvents.js';
 
-module.exports = router;
+import express from 'express';
+const router = express.Router();
+
+router.post('/emailRegistration', emailRegistration);
+router.get('/events', getEvents);
+
+export default router;

@@ -15,4 +15,4 @@ class ApiError extends Error {
   isOperational;
 }
 
-module.exports = ApiError;
+export default ApiError;
