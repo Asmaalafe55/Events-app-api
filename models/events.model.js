@@ -185,4 +185,13 @@ Events.insertMany(
   }
 );
 
+// Find all documents
+Events.find((error, data) => {
+  if (error) {
+    console.log(error);
+  } else {
+    console.log(data);
+  }
+});
+
 export default Events;

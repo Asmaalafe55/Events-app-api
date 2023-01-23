@@ -9,14 +9,14 @@ export default async function getCategories(request, response) {
   }
 }
 
-export async function getCategoryById(request, response) {
-  try {
-    const category = await Categories.findById(request.params.id);
-    response.send(category);
-  } catch (error) {
-    response.status(500).send(error);
-  }
-}
+// export async function getCategoryById(request, response) {
+//   try {
+//     const category = await Categories.findById(request.params.id);
+//     response.send(category);
+//   } catch (error) {
+//     response.status(500).send(error);
+//   }
+// }
 
 export async function addCategory(request, response) {
   const category = new Categories(request.body);
