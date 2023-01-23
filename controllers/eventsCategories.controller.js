@@ -28,3 +28,25 @@ export async function getCategoryById(request, response) {
     response.status(500).send(error);
   }
 }
+export async function updateCategory(request, response) {
+  try {
+    const category = await Categories.findByIdAndUpdate(
+      request.params.id,
+      request.body,
+      { new: true }
+    );
+    response.send(category);
+  } catch (error) {
+    response.status(500).send(error);
+    console.log(error);
+  }
+}
+
+export async function deleteCategory(request, response) {
+  try {
+    const category = await Categories.findByIdAndDelete(request.params.id);
+    response.send(category);
+  } catch (error) {
+    response.status(500).send(error);
+  }
+}
