@@ -1,6 +1,11 @@
 import emailRegistration from './controllers/emailRegistration.js';
 import getEvents from './controllers/getEvents.js';
-import eventCategories from './controllers/eventCategories.js';
+import getCategories, {
+  getCategoryById,
+  addCategory,
+  updateCategory,
+  deleteCategory,
+} from './controllers/eventsCategories.controller.js';
 
 import express from 'express';
 const router = express.Router();
@@ -8,6 +13,10 @@ const router = express.Router();
 router.post('/emailRegistration', emailRegistration);
 router.get('/events', getEvents);
 
-router.post('/add-category', eventCategories);
+router.get('/categories', getCategories);
+router.get('/categories/:id', getCategoryById);
+router.post('/add-category', addCategory);
+router.put('/update-category/:id', updateCategory);
+router.delete('/delete-category/:id', deleteCategory);
 
 export default router;
