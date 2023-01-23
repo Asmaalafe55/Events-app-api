@@ -19,3 +19,12 @@ export async function getCategories(request, response) {
     response.status(500).send(error);
   }
 }
+
+export async function getCategoryById(request, response) {
+  try {
+    const category = await Categories.findById(request.params.id);
+    response.send(category);
+  } catch (error) {
+    response.status(500).send(error);
+  }
+}
