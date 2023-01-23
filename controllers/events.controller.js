@@ -1,4 +1,4 @@
-import Events from '../models/events.model';
+import Events from '../models/events.model.js';
 
 export default async function getEvents(req, res, next) {
   try {
@@ -9,23 +9,23 @@ export default async function getEvents(req, res, next) {
   }
 }
 
-// export async function getEventsByCategoty(req, res, next) {
-//   try {
-//     const events = await Events.find({ category: req.params.category });
-//     res.status(200).json(events);
-//   } catch (error) {
-//     next(error);
-//   }
-// }
+export async function getEventsByCategoty(req, res, next) {
+  try {
+    const events = await Events.find({ category: req.params.category });
+    res.status(200).json(events);
+  } catch (error) {
+    next(error);
+  }
+}
 
-// export async function getEventById(req, res, next) {
-//   try {
-//     const event = await Events.findById(req.params.id);
-//     res.status(200).json(event);
-//   } catch (error) {
-//     next(error);
-//   }
-// }
+export async function getEventById(req, res, next) {
+  try {
+    const event = await Events.findById(req.params.id);
+    res.status(200).json(event);
+  } catch (error) {
+    next(error);
+  }
+}
 
 export async function createEvent(req, res, next) {
   try {

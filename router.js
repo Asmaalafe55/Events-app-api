@@ -21,13 +21,13 @@ const router = express.Router();
 router.post('/emailRegistration', emailRegistration);
 
 router.get('/categories', getCategories);
-// router.get('/categories/:id', getCategoryById);
+router.get('/categories/:id', getCategoryById);
 router.post('/add-category', addCategory);
 router.put('/update-category/:id', updateCategory);
 router.delete('/delete-category/:id', deleteCategory);
 
 router.get('/events', getEvents);
-// router.get('/events/:id', getEventById);
+router.get('/events/:id', getEventById);
 // router.get('/categories/:id/:id', getEventsByCategoty);
 router.post('/create-event', createEvent);
 router.put('/update-event/:id', updateEvent);
