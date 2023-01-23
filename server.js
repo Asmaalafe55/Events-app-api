@@ -35,17 +35,17 @@ db.once('open', function () {
   console.log('Connected successfully');
 });
 
-const Person = mongoose.model('Person', {
-  name: String,
-  age: Number,
-  email: String,
-  phone: String,
-});
+// const Person = mongoose.model('Person', {
+//   name: String,
+//   age: Number,
+//   email: String,
+//   phone: String,
+// });
 
-// make a query to persons
-Person.find({}).then((persons) => {
-  console.log(persons);
-});
+// // make a query to persons
+// Person.find({}).then((persons) => {
+//   console.log(persons);
+// });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
