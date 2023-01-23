@@ -2,10 +2,12 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import router from './router.js';
+import { config } from 'dotenv';
 
 import { errorConverter, errorHandler } from './middlewares/error.js';
 
 const app = express();
+config();
 const port = process.env.PORT || 4000;
 
 app.use(
@@ -19,19 +21,30 @@ app.use(
   })
 );
 
+const username = process.env.USERNAME;
+const password = process.env.PASSWORD;
+const cluster = process.env.CLUSTER;
+
 mongoose.connect(
-  `mongodb+srv://${username}:${password}@${cluster}.mongodb.net/${dbname}?retryWrites=true&w=majority`,
-  {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useUnifiedTopology: true,
-  }
+  `mongodb+srv://${username}:${password}@${cluster}.mongodb.net/?retryWrites=true&w=majority`
 );
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error: '));
 db.once('open', function () {
   console.log('Connected successfully');
+});
+
+const Person = mongoose.model('Person', {
+  name: String,
+  age: Number,
+  email: String,
+  phone: String,
+});
+
+// make a query to persons
+Person.find({}).then((persons) => {
+  console.log(persons);
 });
 
 app.use(express.json());
