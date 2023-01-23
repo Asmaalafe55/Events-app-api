@@ -1,4 +1,4 @@
-import Categories from '../models/eventsCategories.models';
+import Categories from '../models/eventsCategories.model';
 
 export default async function getCategories(request, response) {
   try {

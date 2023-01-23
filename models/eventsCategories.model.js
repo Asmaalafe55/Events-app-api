@@ -6,6 +6,7 @@ const CategoriesSchema = new mongoose.Schema({
   description: String,
   image: String,
 });
+
 const Categories = mongoose.model('Categories', CategoriesSchema);
 
 Categories.insertMany(
@@ -43,5 +44,23 @@ Categories.insertMany(
     }
   }
 );
+
+// Find all documents
+Categories.find((error, data) => {
+  if (error) {
+    console.log(error);
+  } else {
+    console.log(data);
+  }
+});
+
+// Find a specific document by its _id
+// Model.findById('5f5a2c3e9c3c9a2f3a8c2b5f', (error, data) => {
+//   if (error) {
+//     console.log(error);
+//   } else {
+//     console.log(data);
+//   }
+// });
 
 export default Categories;

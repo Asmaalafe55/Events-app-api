@@ -1,5 +1,5 @@
 import emailRegistration from './controllers/emailRegistration.js';
-import getEvents from './controllers/getEvents.js';
+// import getEvents from './controllers/getEvents.js';
 import getCategories, {
   getCategoryById,
   addCategory,
@@ -19,7 +19,6 @@ import express from 'express';
 const router = express.Router();
 
 router.post('/emailRegistration', emailRegistration);
-router.get('/events', getEvents);
 
 router.get('/categories', getCategories);
 router.get('/categories/:id', getCategoryById);
@@ -27,8 +26,9 @@ router.post('/add-category', addCategory);
 router.put('/update-category/:id', updateCategory);
 router.delete('/delete-category/:id', deleteCategory);
 
-// router.get('/categories/:id/:id', getEventsByCategoty);
+router.get('/events', getEvents);
 router.get('/events/:id', getEventById);
+// router.get('/categories/:id/:id', getEventsByCategoty);
 router.post('/create-event', createEvent);
 router.put('/update-event/:id', updateEvent);
 router.delete('/delete-event/:id', deleteEvent);
