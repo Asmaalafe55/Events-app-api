@@ -27,6 +27,10 @@ router.post('/add-category', addCategory);
 router.put('/update-category/:id', updateCategory);
 router.delete('/delete-category/:id', deleteCategory);
 
-// router.get('/events/:id', getEventById);
+// router.get('/categories/:id/:id', getEventsByCategoty);
+router.get('/events/:id', getEventById);
+router.post('/create-event', createEvent);
+router.put('/update-event/:id', updateEvent);
+router.delete('/delete-event/:id', deleteEvent);
 
 export default router;
