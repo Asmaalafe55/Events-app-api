@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import data from '../data/data.json' assert { type: 'json' };
 
 export const CategoriesSchema = new mongoose.Schema({
   category: String,

@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import data from '../data/data.json' assert { type: 'json' };
 import { CategoriesSchema } from './eventsCategories.model.js';
 
 const EventsSchema = new mongoose.Schema({
