@@ -10,6 +10,7 @@ const EventsSchema = new mongoose.Schema({
   image: String,
   emails_registered: [String],
 });
+
 const Events = mongoose.model('Events', EventsSchema);
 
 export default Events;

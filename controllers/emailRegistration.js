@@ -1,50 +1,21 @@
-import path from 'path';
-import fs from 'fs';
+import Events from '../models/events.model.js';
 
-function buildPath() {
-  return path.join(process.cwd(), 'data', 'data.json');
-  // cwd - current working directory
-}
-
-function extractData(filePath) {
-  const jsonData = fs.readFileSync(filePath);
-  const data = JSON.parse(jsonData);
-  return data;
-}
-
-export default function handler(req, res) {
-  const filePath = buildPath();
-  const { events_categories, allEvents } = extractData(filePath);
-
-  if (!allEvents) {
-    // res 404 if there are no AllEvents
-    return res.status(404).json({ message: `Events data not found` });
-  }
-
+export default async function addEmail(req, res) {
   const { email, eventId } = req.body;
 
-  const newAllEvents = allEvents.map((e) => {
-    if (e.id === eventId) {
-      if (e.emails_registered.includes(email)) {
-        res.status(401).json({
-          message: `This email has already registered to this event`,
-        });
-        return e;
-      }
-      return {
-        ...e,
-        emails_registered: [...e.emails_registered, email],
-      };
-    }
-    return e;
-  });
+  const event = await Events.findById(eventId);
+  if (!event) {
+    return res.status(400).json({ error: 'Event does not exist' });
+  }
 
-  fs.writeFileSync(
-    filePath,
-    JSON.stringify({ events_categories, allEvents: newAllEvents })
+  const emailExists = await event.emails_registered.find(
+    (e) => e.email === email
   );
-
-  res.status(201).json({
-    message: `You have been registered succesfully with the email: ${email}, ${eventId}`,
-  });
+  if (emailExists) {
+    return res.status(400).json({ error: 'Email already exists' });
+  } else {
+    event.emails_registered.push({ email });
+    await event.save();
+    return res.status(200).json({ message: 'Email added' });
+  }
 }

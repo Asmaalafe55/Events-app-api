@@ -1,5 +1,5 @@
-import emailRegistration from './controllers/emailRegistration.js';
-// import getEvents from './controllers/getEvents.js';
+// import emailRegistration from './controllers/oldEmailRegistration.js';
+import addEmail from './controllers/emailRegistration.js';
 import getCategories, {
   getCategoryById,
   addCategory,
@@ -18,7 +18,7 @@ import getEvents, {
 import express from 'express';
 const router = express.Router();
 
-router.post('/emailRegistration', emailRegistration);
+router.post('/addEmail', addEmail);
 
 router.get('/categories', getCategories);
 router.get('/categories/:id', getCategoryById);
