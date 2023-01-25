@@ -49,8 +49,7 @@ db.once('open', function () {
   Events.insertMany(
     data.allEvents.map((e) => {
       const index = Math.floor(Math.random() * 3);
-      // e.category = data.events_categories[index];
-      // console.log(e);
+      e.category = data.events_categories[index];
       return e;
     }),
     (error, data) => {

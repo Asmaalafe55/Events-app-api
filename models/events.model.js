@@ -3,6 +3,7 @@ import data from '../data/data.json' assert { type: 'json' };
 import { CategoriesSchema } from './eventsCategories.model.js';
 
 const EventsSchema = new mongoose.Schema({
+  _id: false,
   id: String,
   title: String,
   category: CategoriesSchema,
