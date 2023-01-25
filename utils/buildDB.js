@@ -20,11 +20,18 @@ db.on('error', console.error.bind(console, 'connection error: '));
 db.once('open', function () {
   // console.log(process.argv);
 
+  // Categories.collection.drop();
+  // Events.collection.drop();
+  // function (err) {
+  //   console.log('Categories collection dropped');
+  //   if (err) return handleError(err);
+  // }
+
   Categories.insertMany(data.events_categories, (error, data) => {
     if (error) {
       console.log(error);
     } else {
-      console.log('Data saved successfully!');
+      console.log('Categories data saved successfully!');
     }
   });
 
@@ -38,7 +45,7 @@ db.once('open', function () {
       if (error) {
         console.log(error);
       } else {
-        console.log('Data saved successfully!');
+        console.log('Events data saved successfully!');
       }
     }
   );
