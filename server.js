@@ -4,6 +4,10 @@ import cors from 'cors';
 import router from './router.js';
 import { config } from 'dotenv';
 
+import Categories from './models/eventsCategories.model.js';
+import Events from './models/events.model.js';
+import data from './data/data.json' assert { type: 'json' };
+
 import { errorConverter, errorHandler } from './middlewares/error.js';
 
 const app = express();
@@ -32,20 +36,33 @@ mongoose.connect(
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error: '));
 db.once('open', function () {
+  // console.log(process.argv);
+
+  Categories.insertMany(data.events_categories, (error, data) => {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log('Data saved successfully!');
+    }
+  });
+
+  Events.insertMany(
+    data.allEvents.map((e) => {
+      const index = Math.floor(Math.random() * 3);
+      // e.category = data.events_categories[index];
+      // console.log(e);
+      return e;
+    }),
+    (error, data) => {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log('Data saved successfully!');
+      }
+    }
+  );
   console.log('Connected successfully');
 });
-
-// const Person = mongoose.model('Person', {
-//   name: String,
-//   age: Number,
-//   email: String,
-//   phone: String,
-// });
-
-// // make a query to persons
-// Person.find({}).then((persons) => {
-//   console.log(persons);
-// });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
