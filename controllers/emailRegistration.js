@@ -1,7 +1,6 @@
 import Events from '../models/events.model.js';
 
 export default async function addEmail(req, res) {
-  console.log(req.body);
   const { email, eventId } = req.body;
 
   const event = await Events.findById(eventId);
