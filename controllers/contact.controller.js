@@ -8,7 +8,7 @@ export default async (req, res) => {
 
     const mailOptions = {
       from: process.env.GMAIL_EMAIL, // here i need to specify the sender
-      to: 'efpyi@example.com',
+      to: process.env.GMAIL_EMAIL_SEND,
       subject: 'Contact Form',
       text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
     };
