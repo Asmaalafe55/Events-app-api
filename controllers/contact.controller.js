@@ -11,6 +11,7 @@ export default async (req, res) => {
       to: process.env.GMAIL_EMAIL_SEND,
       subject: 'Contact Form',
       text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
+      html: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
     };
   } catch (error) {
     console.log(error);

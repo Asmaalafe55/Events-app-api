@@ -1,4 +1,7 @@
 import Categories from '../models/eventsCategories.model.js';
+import ApiError from '../utils/ApiError.js';
+import catchAsync from '../utils/catchAsync.js';
+import httpStatus from 'http-status';
 
 export default async function getCategories(request, response) {
   try {
