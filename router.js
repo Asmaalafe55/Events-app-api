@@ -1,5 +1,6 @@
 import addEmail from './controllers/emailRegistration.js';
 import emailNewsletter from './controllers/emailNewsletter.js';
+import contact from './controllers/contact.controller.js';
 import getCategories, {
   getCategoryById,
   addCategory,
@@ -19,6 +20,8 @@ import express from 'express';
 const router = express.Router();
 
 router.post('/emailNewsletter', emailNewsletter);
+
+router.post('/contact', contact);
 
 router.post('/addEmail', addEmail);
 
