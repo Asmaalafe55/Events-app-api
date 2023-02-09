@@ -17,7 +17,7 @@ import getEvents, {
   deleteEvent,
 } from './controllers/events.controller.js';
 
-import { login, register } from './controllers/auth.controller.js';
+// import { login, register } from './controllers/auth.controller.js';
 // import logout from './controllers/logout.controller.js';
 import {
   getUsers,
@@ -38,8 +38,8 @@ router.post('/create-user', createUser);
 router.put('/update-user/:id', updateUser);
 router.delete('/delete-user/:id', deleteUser);
 
-router.post('/login', login);
-router.post('/register', register);
+// router.post('/login', login);
+// router.post('/register', register);
 
 router.post('/emailNewsletter', emailNewsletter);
 
