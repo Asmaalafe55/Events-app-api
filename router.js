@@ -19,6 +19,8 @@ import getEvents, {
 import express from 'express';
 const router = express.Router();
 
+router.get('/users', getUsers);
+
 router.post('/emailNewsletter', emailNewsletter);
 
 router.post('/contact', contact);
