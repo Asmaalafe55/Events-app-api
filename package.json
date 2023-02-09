@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "dev": "nodemon server.js",
-    "build:db":"node utils/buildDB.js"
+    "build:db": "node utils/buildDB.js"
   },
   "repository": {
     "type": "git",
@@ -23,6 +23,7 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "http-status": "^1.6.2",
+    "jsonwebtoken": "^9.0.0",
     "mongoose": "^6.8.4",
     "nodemailer": "^6.9.0"
   },
