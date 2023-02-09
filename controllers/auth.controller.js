@@ -9,7 +9,7 @@ config();
 
 const SECRET = process.env.JWT_SECRET;
 
-const login = catchAsync(async (req, res) => {
+export const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -22,7 +22,7 @@ const login = catchAsync(async (req, res) => {
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
   }
-  const isMatch = await bcrypt.compare(password, user.password);
+  const isMatch = bcrypt.compareSync(password, user.password);
   if (!isMatch) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials');
   }
@@ -33,4 +33,35 @@ const login = catchAsync(async (req, res) => {
     email: user.email,
     access_token: token,
   });
+});
+
+export const register = catchAsync(async (req, res) => {
+  const { fName, lName, email, password, account } = req.body;
+
+  if (!fName || !lName || !email || !password || !account) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Please provide all fields');
+  }
+  const userExists = await Users.findOne({ email });
+  if (!!userExists) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'User already exists');
+  }
+  const salt = bcrypt.genSaltSync(10);
+  const hash = bcrypt.hashSync(password, salt);
+
+  const newUser = await Users.create({
+    fName,
+    lName,
+    email,
+    password: hash,
+    account,
+  });
+
+  if (!newUser) {
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Internal server error'
+    );
+  }
+
+  res.status(httpStatus.CREATED).send({ newUser });
 });
