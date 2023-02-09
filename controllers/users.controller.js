@@ -57,3 +57,24 @@ export const createUser = catchAsync(async (req, res) => {
   }
   res.status(httpStatus.CREATED).send(user);
 });
+
+export const updateUser = catchAsync(async (req, res) => {
+  const { fName, lName, email, password, account } = req.body;
+  const id = req.params.id;
+
+  if (!fName || !lName || !email || !password || !account) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Missing fields');
+  }
+  const user = await Users.findByIdAndUpdate(id, {
+    fName: fName,
+    lName: lName,
+    email: email,
+    password: password,
+    account: account,
+  });
+
+  if (!user) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+  res.status(httpStatus.OK).send(user);
+});
