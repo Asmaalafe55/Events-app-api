@@ -1,8 +1,8 @@
-import Users from '../models/users.model';
-import ApiError from '../utils/ApiError';
-import bcrypt from 'bcryptjs';
+import Users from '../models/users.model.js';
+import ApiError from '../utils/ApiError.js';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import catchAsync from '../utils/catchAsync';
+import catchAsync from '../utils/catchAsync.js';
 import httpStatus from 'http-status';
 import { config } from 'dotenv';
 config();

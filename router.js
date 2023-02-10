@@ -17,7 +17,7 @@ import getEvents, {
   deleteEvent,
 } from './controllers/events.controller.js';
 
-// import { login, register } from './controllers/auth.controller.js';
+import { login, register } from './controllers/auth.controller.js';
 // import logout from './controllers/logout.controller.js';
 import {
   getUsers,
