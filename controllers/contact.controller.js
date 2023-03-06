@@ -22,7 +22,13 @@ export default async (req, res) => {
     } else {
       console.log('Email sent:' + info.response);
     }
-    res.status(200).json(info);
+    // res.status(200).json(info);
+    res.status(200).json({
+      message: 'Your message has been sent!',
+      success: true,
+      data: mailOptions,
+      email,
+    });
     res.end();
   });
 };
