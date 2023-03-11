@@ -38,8 +38,8 @@ router.post('/create-user', createUser);
 router.put('/update-user/:id', updateUser);
 router.delete('/delete-user/:id', deleteUser);
 
-// router.post('/login', login);
-// router.post('/register', register);
+router.post('/sign-in', login);
+router.post('/sign-up', register);
 
 router.post('/emailNewsletter', emailNewsletter);
 
