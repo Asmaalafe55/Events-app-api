@@ -40,8 +40,9 @@ export const login = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials');
   }
 
-  const token = jwt.sign({ id: user._id }, SECRET);
-
+  const token = jwt.sign({ id: user._id }, SECRET, {
+    expiresIn: '3h',
+  });
   res.status(httpStatus.OK).send({
     status: httpStatus.OK,
     email: user.email,
@@ -79,10 +80,15 @@ export const register = catchAsync(async (req, res) => {
     );
   }
 
+  const token = jwt.sign({ userId: newUser._id }, SECRET, {
+    expiresIn: '3h',
+  });
+
   res.status(httpStatus.CREATED).send({
     id: newUser._id,
     email: newUser.email,
     fName: newUser.fName,
     lName: newUser.lName,
+    access_token: token,
   });
 });
