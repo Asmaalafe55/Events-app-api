@@ -13,12 +13,17 @@ const SECRET = process.env.JWT_SECRET;
 const registerValidationSchema = Joi.object({
   fName: Joi.string().required(),
   lName: Joi.string().required(),
-  email: Joi.string().email().required(),
+  email: Joi.string()
+    .email({ tlds: { allow: ['com', 'net', 'org'] } })
+    .required(),
+
   password: Joi.string().min(6).required(),
 });
 
 const loginValidationSchema = Joi.object({
-  email: Joi.string().email().required(),
+  email: Joi.string()
+    .email({ tlds: { allow: ['com', 'net', 'org'] } })
+    .required(),
   password: Joi.string().required(),
 });
 
@@ -40,9 +45,8 @@ export const login = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials');
   }
 
-  const token = jwt.sign({ id: user._id }, SECRET, {
-    expiresIn: '3h',
-  });
+  const token = jwt.sign({ id: user._id }, SECRET);
+
   res.status(httpStatus.OK).send({
     status: httpStatus.OK,
     email: user.email,
@@ -80,9 +84,7 @@ export const register = catchAsync(async (req, res) => {
     );
   }
 
-  const token = jwt.sign({ userId: newUser._id }, SECRET, {
-    expiresIn: '3h',
-  });
+  const token = jwt.sign({ userId: newUser._id }, SECRET);
 
   res.status(httpStatus.CREATED).send({
     id: newUser._id,
