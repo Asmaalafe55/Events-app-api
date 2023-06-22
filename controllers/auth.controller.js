@@ -36,9 +36,9 @@ export const login = catchAsync(async (req, res) => {
 });
 
 export const register = catchAsync(async (req, res) => {
-  const { fName, lName, email, password, account } = req.body;
+  const { fName, lName, email, password } = req.body;
 
-  if (!fName || !lName || !email || !password || !account) {
+  if (!fName || !lName || !email || !password) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Please provide all fields');
   }
   const userExists = await Users.findOne({ email });
@@ -53,7 +53,6 @@ export const register = catchAsync(async (req, res) => {
     lName,
     email,
     password: hash,
-    account,
   });
 
   if (!newUser) {
@@ -63,5 +62,12 @@ export const register = catchAsync(async (req, res) => {
     );
   }
 
-  res.status(httpStatus.CREATED).send({ newUser });
+  res
+    .status(httpStatus.CREATED)
+    .send({
+      id: newUser._id,
+      email: newUser.email,
+      fName: newUser.fName,
+      lName: newUser.lName,
+    });
 });
