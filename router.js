@@ -17,8 +17,6 @@ import getEvents, {
   deleteEvent,
 } from './controllers/events.controller.js';
 
-import { login, register } from './controllers/auth.controller.js';
-// import logout from './controllers/logout.controller.js';
 import {
   getUsers,
   getUserByEmail,
@@ -27,6 +25,10 @@ import {
   updateUser,
   deleteUser,
 } from './controllers/users.controller.js';
+
+import { login, register } from './controllers/auth.controller.js';
+
+// import logout from './controllers/logout.controller.js';
 
 import express from 'express';
 const router = express.Router();
@@ -39,7 +41,7 @@ router.put('/update-user/:id', updateUser);
 router.delete('/delete-user/:id', deleteUser);
 
 router.post('/login', login);
-// router.post('/register', register);
+router.post('/register', register);
 
 router.post('/emailNewsletter', emailNewsletter);
 
