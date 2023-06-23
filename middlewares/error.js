@@ -19,6 +19,7 @@ export const errorHandler = (err, req, res, next) => {
     statusCode = httpStatus.INTERNAL_SERVER_ERROR;
     message = String(httpStatus[httpStatus.INTERNAL_SERVER_ERROR]);
   }
+  console.log(err);
 
   res.locals.errorMessage = err.message;
 
@@ -26,7 +27,7 @@ export const errorHandler = (err, req, res, next) => {
     code: statusCode,
     success: false,
     message,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    stack: err.stack,
   };
 
   res.status(statusCode).send(response);

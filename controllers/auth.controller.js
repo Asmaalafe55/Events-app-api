@@ -10,16 +10,6 @@ config();
 
 const SECRET = process.env.JWT_SECRET;
 
-const registerValidationSchema = Joi.object({
-  fName: Joi.string().required(),
-  lName: Joi.string().required(),
-  email: Joi.string()
-    .email({ tlds: { allow: ['com', 'net', 'org'] } })
-    .required(),
-
-  password: Joi.string().min(6).required(),
-});
-
 const loginValidationSchema = Joi.object({
   email: Joi.string()
     .email({ tlds: { allow: ['com', 'net', 'org'] } })
@@ -30,6 +20,7 @@ const loginValidationSchema = Joi.object({
 export const login = catchAsync(async (req, res) => {
   const { error, value } = loginValidationSchema.validate(req.body);
   if (error) {
+    console.log({ error });
     throw new ApiError(httpStatus.BAD_REQUEST, error.details[0].message);
   }
 
@@ -54,13 +45,22 @@ export const login = catchAsync(async (req, res) => {
   });
 });
 
+const registerValidationSchema = Joi.object({
+  firstName: Joi.string().required(),
+  lastName: Joi.string().required(),
+  email: Joi.string()
+    .email({ tlds: { allow: ['com', 'net', 'org'] } })
+    .required(),
+  password: Joi.string().min(6).required(),
+});
+
 export const register = catchAsync(async (req, res) => {
   const { error, value } = registerValidationSchema.validate(req.body);
   if (error) {
     throw new ApiError(httpStatus.BAD_REQUEST, error.details[0].message);
   }
 
-  const { fName, lName, email, password } = value;
+  const { firstName, lastName, email, password } = value;
 
   const userExists = await Users.findOne({ email });
   if (userExists) {
@@ -71,8 +71,8 @@ export const register = catchAsync(async (req, res) => {
   const hash = bcrypt.hashSync(password, salt);
 
   const newUser = await Users.create({
-    fName,
-    lName,
+    firstName,
+    lastName,
     email,
     password: hash,
   });
@@ -89,8 +89,8 @@ export const register = catchAsync(async (req, res) => {
   res.status(httpStatus.CREATED).send({
     id: newUser._id,
     email: newUser.email,
-    fName: newUser.fName,
-    lName: newUser.lName,
+    firstName: newUser.firstName,
+    lastName: newUser.lastName,
     access_token: token,
   });
 });
