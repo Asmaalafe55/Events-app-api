@@ -1,55 +1,69 @@
 import Events from '../models/events.model.js';
+import ApiError from '../utils/ApiError.js';
+import catchAsync from '../utils/catchAsync.js';
+import httpStatus from 'http-status';
 
-export default async function getEvents(req, res, next) {
+export const getEvents = catchAsync(async (req, res, next) => {
   try {
     const events = await Events.find();
-    res.status(200).json(events);
+    res.status(httpStatus.OK).json(events);
   } catch (error) {
     next(error);
   }
-}
+});
 
-export async function getEventsByCategoty(req, res, next) {
+export const getEventsByCategory = catchAsync(async (req, res, next) => {
   try {
     const events = await Events.find({ category: req.params.category });
-    res.status(200).json(events);
+    res.status(httpStatus.OK).json(events);
   } catch (error) {
     next(error);
   }
-}
+});
 
-export async function getEventById(req, res, next) {
+export const getEventById = catchAsync(async (req, res, next) => {
   try {
     const event = await Events.findById(req.params.id);
-    res.status(200).json(event);
+    if (!event) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Event not found');
+    }
+    res.status(httpStatus.OK).json(event);
   } catch (error) {
     next(error);
   }
-}
+});
 
-export async function createEvent(req, res, next) {
+export const createEvent = catchAsync(async (req, res, next) => {
   try {
     const event = await Events.create(req.body);
-    res.status(201).json(event);
+    res.status(httpStatus.CREATED).json(event);
   } catch (error) {
     next(error);
   }
-}
+});
 
-export async function updateEvent(req, res, next) {
+export const updateEvent = catchAsync(async (req, res, next) => {
   try {
-    const event = await Events.findByIdAndUpdate(req.params.id, req.body);
-    res.status(200).json(event);
+    const event = await Events.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
+    if (!event) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Event not found');
+    }
+    res.status(httpStatus.OK).json(event);
   } catch (error) {
     next(error);
   }
-}
+});
 
-export async function deleteEvent(req, res, next) {
+export const deleteEvent = catchAsync(async (req, res, next) => {
   try {
-    await Events.findByIdAndDelete(req.params.id);
-    res.status(204).json();
+    const event = await Events.findByIdAndDelete(req.params.id);
+    if (!event) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Event not found');
+    }
+    res.status(httpStatus.NO_CONTENT).json();
   } catch (error) {
     next(error);
   }
-}
+});
