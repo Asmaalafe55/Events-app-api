@@ -10,12 +10,19 @@ export const contact = catchAsync(async (req, res, next) => {
   try {
     const { name, email, message } = req.body;
 
+    const templatePath = 'templates/contactTemplate.html';
+
+    const htmlContent = fs
+      .readFileSync(templatePath, 'utf-8')
+      .replace('{{name}}', name)
+      .replace('{{email}}', email)
+      .replace('{{message}}', message);
+
     const mailOptions = {
       from: process.env.GMAIL_EMAIL,
       to: process.env.GMAIL_EMAIL_SEND,
       subject: 'Contact Form',
-      text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
-      html: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
+      html: htmlContent,
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
