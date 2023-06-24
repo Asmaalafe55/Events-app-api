@@ -4,10 +4,6 @@ import catchAsync from '../utils/catchAsync.js';
 import httpStatus from 'http-status';
 import { config } from 'dotenv';
 import fs from 'fs';
-// import path from 'path';
-
-// Rest of your code here...
-// const templatePath = path.join(__dirname, 'templates', 'contactTemplate.html');
 
 config();
 

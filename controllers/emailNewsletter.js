@@ -12,9 +12,9 @@ export const emailNewsletter = catchAsync(async (req, res) => {
   const mailOptions = {
     from: process.env.GMAIL_EMAIL,
     to: email,
-    subject: 'Hello',
-    text: 'Hello world?',
-    html: '<b>Hello world?</b>',
+    subject: process.env.NEWSLETTER_SUBJECT || 'Hello',
+    text: process.env.NEWSLETTER_TEXT || 'Hello world?',
+    html: process.env.NEWSLETTER_HTML || '<b>Hello world?</b>',
   };
 
   try {
