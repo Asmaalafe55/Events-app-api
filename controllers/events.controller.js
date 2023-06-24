@@ -12,7 +12,7 @@ export const getEvents = catchAsync(async (req, res, next) => {
   }
 });
 
-export const getEventsByCategory = catchAsync(async (req, res, next) => {
+export const getEventsByCategoty = catchAsync(async (req, res, next) => {
   try {
     const events = await Events.find({ category: req.params.category });
     res.status(httpStatus.OK).json(events);

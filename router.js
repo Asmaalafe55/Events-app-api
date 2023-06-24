@@ -1,15 +1,17 @@
-import addEmail from './controllers/emailRegistration.js';
-import emailNewsletter from './controllers/emailNewsletter.js';
-import contact from './controllers/contact.controller.js';
+import { addEmail } from './controllers/emailRegistration.js';
+import { emailNewsletter } from './controllers/emailNewsletter.js';
+import { contact } from './controllers/contact.controller.js';
 
-import getCategories, {
+import {
+  getCategories,
   getCategoryById,
   addCategory,
   updateCategory,
   deleteCategory,
 } from './controllers/eventsCategories.controller.js';
 
-import getEvents, {
+import {
+  getEvents,
   getEventsByCategoty,
   getEventById,
   createEvent,
@@ -43,7 +45,7 @@ router.delete('/delete-user/:id', deleteUser);
 router.post('/login', login);
 router.post('/register', register);
 
-router.post('/sendEmail', emailNewsletter);
+router.post('/emailNewsletter', emailNewsletter);
 
 router.post('/contact', contact);
 

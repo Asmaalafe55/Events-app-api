@@ -1,8 +1,12 @@
 import { transporter } from '../utils/nodemailer.js';
+import ApiError from '../utils/ApiError.js';
+import catchAsync from '../utils/catchAsync.js';
+import httpStatus from 'http-status';
 import { config } from 'dotenv';
+
 config();
 
-export default async (req, res) => {
+export const contact = catchAsync(async (req, res, next) => {
   try {
     const { name, email, message } = req.body;
 
@@ -13,22 +17,25 @@ export default async (req, res) => {
       text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
       html: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
     };
-  } catch (error) {
-    console.log(error);
-  }
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log('Email sent:' + info.response);
-    }
-    // res.status(200).json(info);
-    res.status(200).json({
-      message: 'Your message has been sent!',
-      success: true,
-      data: mailOptions,
-      email,
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log(error);
+        throw new ApiError(
+          httpStatus.INTERNAL_SERVER_ERROR,
+          'Error sending email'
+        );
+      } else {
+        console.log('Email sent:' + info.response);
+        res.status(httpStatus.OK).json({
+          message: 'Your message has been sent!',
+          success: true,
+          data: mailOptions,
+          email,
+        });
+      }
     });
-    res.end();
-  });
-};
+  } catch (error) {
+    next(error);
+  }
+});
