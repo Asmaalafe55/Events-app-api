@@ -3,54 +3,62 @@ import ApiError from '../utils/ApiError.js';
 import catchAsync from '../utils/catchAsync.js';
 import httpStatus from 'http-status';
 
-export default async function getCategories(request, response) {
+export const getCategories = catchAsync(async (req, res) => {
   try {
     const categories = await Categories.find();
-    response.send(categories);
+    res.send(categories);
   } catch (error) {
-    response.status(500).send(error);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error);
   }
-}
+});
 
-export async function getCategoryById(request, response) {
+export const getCategoryById = catchAsync(async (req, res) => {
   try {
-    const category = await Categories.findById(request.params.id);
-    response.send(category);
+    const category = await Categories.findById(req.params.id);
+    if (!category) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Category not found');
+    }
+    res.send(category);
   } catch (error) {
-    response.status(500).send(error);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error);
   }
-}
+});
 
-export async function addCategory(request, response) {
-  const category = new Categories(request.body);
+export const addCategory = catchAsync(async (req, res) => {
+  const category = new Categories(req.body);
 
   try {
     await category.save();
-    response.send(category);
+    res.send(category);
   } catch (error) {
-    response.status(500).send(error);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error);
   }
-}
+});
 
-export async function updateCategory(request, response) {
+export const updateCategory = catchAsync(async (req, res) => {
   try {
     const category = await Categories.findByIdAndUpdate(
-      request.params.id,
-      request.body,
+      req.params.id,
+      req.body,
       { new: true }
     );
-    response.send(category);
+    if (!category) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Category not found');
+    }
+    res.send(category);
   } catch (error) {
-    response.status(500).send(error);
-    console.log(error);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error);
   }
-}
+});
 
-export async function deleteCategory(request, response) {
+export const deleteCategory = catchAsync(async (req, res) => {
   try {
-    const category = await Categories.findByIdAndDelete(request.params.id);
-    response.send(category);
+    const category = await Categories.findByIdAndDelete(req.params.id);
+    if (!category) {
+      throw new ApiError(httpStatus.NOT_FOUND, 'Category not found');
+    }
+    res.send(category);
   } catch (error) {
-    response.status(500).send(error);
+    throw new ApiError(httpStatus.INTERNAL_SERVER_ERROR, error);
   }
-}
+});
