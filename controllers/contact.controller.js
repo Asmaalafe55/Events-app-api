@@ -11,7 +11,7 @@ export const contact = catchAsync(async (req, res, next) => {
     const { name, email, message } = req.body;
 
     const mailOptions = {
-      from: process.env.GMAIL_EMAIL, // here i need to specify the sender
+      from: process.env.GMAIL_EMAIL_SEND, // here i need to specify the sender
       to: process.env.GMAIL_EMAIL_SEND,
       subject: 'Contact Form',
       text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
