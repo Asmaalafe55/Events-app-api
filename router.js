@@ -43,7 +43,7 @@ router.delete('/delete-user/:id', deleteUser);
 router.post('/login', login);
 router.post('/register', register);
 
-router.post('/emailNewsletter', emailNewsletter);
+router.post('/sendEmail', emailNewsletter);
 
 router.post('/contact', contact);
 

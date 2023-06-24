@@ -1,8 +1,12 @@
 import { transporter } from '../utils/nodemailer.js';
+import ApiError from '../utils/ApiError.js';
+import catchAsync from '../utils/catchAsync.js';
+import httpStatus from 'http-status';
 import { config } from 'dotenv';
+
 config();
 
-export default async (req, res) => {
+export const emailNewsletter = catchAsync(async (req, res) => {
   const { email } = req.body;
 
   const mailOptions = {
@@ -12,19 +16,20 @@ export default async (req, res) => {
     text: 'Hello world?',
     html: '<b>Hello world?</b>',
   };
+
   try {
     await transporter.sendMail(mailOptions);
-    res.status(200).json({
+    res.status(httpStatus.OK).json({
       message: 'Email sent successfully',
       success: true,
       data: mailOptions,
       email,
     });
   } catch (error) {
-    res.status(500).json({
-      message: 'Error sending email',
-      success: false,
-      error,
-    });
+    throw new ApiError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Error sending email',
+      error
+    );
   }
-};
+});
