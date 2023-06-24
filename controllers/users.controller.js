@@ -36,9 +36,9 @@ export const getUserByEmail = catchAsync(async (req, res) => {
 });
 
 export const createUser = catchAsync(async (req, res) => {
-  const { firstName, lastName, email, password, account } = req.body;
+  const { firstName, lastName, email, password } = req.body;
 
-  if (!firstName || !lastName || !email || !password || !account) {
+  if (!firstName || !lastName || !email || !password) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Missing fields');
   }
   const user = await Users.create({
@@ -46,7 +46,6 @@ export const createUser = catchAsync(async (req, res) => {
     lastName: lastName,
     email: email,
     password: password,
-    account: account,
   });
 
   if (!user) {
@@ -59,10 +58,10 @@ export const createUser = catchAsync(async (req, res) => {
 });
 
 export const updateUser = catchAsync(async (req, res) => {
-  const { firstName, lastName, email, password, account } = req.body;
+  const { firstName, lastName, email, password } = req.body;
   const id = req.params.id;
 
-  if (!firstName || !lastName || !email || !password || !account) {
+  if (!firstName || !lastName || !email || !password) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Missing fields');
   }
   const user = await Users.findByIdAndUpdate(id, {
@@ -70,7 +69,6 @@ export const updateUser = catchAsync(async (req, res) => {
     lastName: lastName,
     email: email,
     password: password,
-    account: account,
   });
 
   if (!user) {
