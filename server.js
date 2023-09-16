@@ -14,7 +14,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://10.0.0.5:3000',
   'http://127.0.0.1:3000',
-  'https://events-imaxewdlr-asmaalafe55.vercel.app ',
+  'https://events-app-silk.vercel.app',
 ];
 
 app.use(
