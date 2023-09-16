@@ -1,15 +1,17 @@
-import addEmail from './controllers/emailRegistration.js';
-import emailNewsletter from './controllers/emailNewsletter.js';
-import contact from './controllers/contact.controller.js';
+import { addEmail } from './controllers/emailRegistration.js';
+import { emailNewsletter } from './controllers/emailNewsletter.js';
+import { contact } from './controllers/contact.controller.js';
 
-import getCategories, {
+import {
+  getCategories,
   getCategoryById,
   addCategory,
   updateCategory,
   deleteCategory,
 } from './controllers/eventsCategories.controller.js';
 
-import getEvents, {
+import {
+  getEvents,
   getEventsByCategoty,
   getEventById,
   createEvent,
@@ -17,8 +19,6 @@ import getEvents, {
   deleteEvent,
 } from './controllers/events.controller.js';
 
-import { login, register } from './controllers/auth.controller.js';
-// import logout from './controllers/logout.controller.js';
 import {
   getUsers,
   getUserByEmail,
@@ -27,6 +27,10 @@ import {
   updateUser,
   deleteUser,
 } from './controllers/users.controller.js';
+
+import { login, register } from './controllers/auth.controller.js';
+
+// import logout from './controllers/logout.controller.js';
 
 import express from 'express';
 const router = express.Router();
@@ -38,8 +42,9 @@ router.post('/create-user', createUser);
 router.put('/update-user/:id', updateUser);
 router.delete('/delete-user/:id', deleteUser);
 
-// router.post('/login', login);
-// router.post('/register', register);
+
+router.post('/login', login);
+router.post('/register', register);
 
 router.post('/emailNewsletter', emailNewsletter);
 

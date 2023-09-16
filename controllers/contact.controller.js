@@ -1,34 +1,49 @@
 import { transporter } from '../utils/nodemailer.js';
+import ApiError from '../utils/ApiError.js';
+import catchAsync from '../utils/catchAsync.js';
+import httpStatus from 'http-status';
 import { config } from 'dotenv';
+import fs from 'fs';
+
 config();
 
-export default async (req, res) => {
+export const contact = catchAsync(async (req, res, next) => {
   try {
     const { name, email, message } = req.body;
 
+    const templatePath = 'templates/contactTemplate.html';
+
+    const htmlContent = fs
+      .readFileSync(templatePath, 'utf-8')
+      .replace('{{name}}', name)
+      .replace('{{email}}', email)
+      .replace('{{message}}', message);
+
     const mailOptions = {
-      from: process.env.GMAIL_EMAIL, // here i need to specify the sender
+      from: process.env.GMAIL_EMAIL,
       to: process.env.GMAIL_EMAIL_SEND,
       subject: 'Contact Form',
-      text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
-      html: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
+      html: htmlContent,
     };
-  } catch (error) {
-    console.log(error);
-  }
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log('Email sent:' + info.response);
-    }
-    // res.status(200).json(info);
-    res.status(200).json({
-      message: 'Your message has been sent!',
-      success: true,
-      data: mailOptions,
-      email,
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log(error);
+        throw new ApiError(
+          httpStatus.INTERNAL_SERVER_ERROR,
+          'Error sending email'
+        );
+      } else {
+        console.log('Email sent:' + info.response);
+        res.status(httpStatus.OK).json({
+          message: 'Your message has been sent!',
+          success: true,
+          data: mailOptions,
+          email,
+        });
+      }
     });
-    res.end();
-  });
-};
+  } catch (error) {
+    next(error);
+  }
+});
