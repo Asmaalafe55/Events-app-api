@@ -10,13 +10,22 @@ const app = express();
 config();
 const port = process.env.PORT || 4000;
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://10.0.0.5:3000',
+  'http://127.0.0.1:3000',
+  'https://events-imaxewdlr-asmaalafe55.vercel.app ',
+];
+
 app.use(
   cors({
-    origin: [
-      'http://localhost:3000',
-      'http://10.0.0.5:3000',
-      'http://127.0.0.1:3000',
-    ],
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Origin not allowed by CORS'));
+      }
+    },
     credentials: true,
   })
 );
