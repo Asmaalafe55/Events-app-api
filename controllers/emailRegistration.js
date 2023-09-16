@@ -1,20 +1,23 @@
 import Events from '../models/events.model.js';
+import ApiError from '../utils/ApiError.js';
+import catchAsync from '../utils/catchAsync.js';
+import httpStatus from 'http-status';
 
-export default async function addEmail(req, res) {
+export const addEmail = catchAsync(async (req, res) => {
   const { email, eventId } = req.body;
 
   const event = await Events.findById(eventId);
   if (!event) {
-    return res.status(400).json({ error: 'Event does not exist' });
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Event does not exist');
   }
 
-  const emailExists = await event.emails_registered.find((e) => e === email);
-
+  const emailExists = event.emails_registered.includes(email);
   if (emailExists) {
-    return res.status(400).json({ error: 'Email already exists' });
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Email already exists');
   }
 
   event.emails_registered.push(email);
   await event.save();
-  return res.status(200).json({ message: 'Email added' });
-}
+
+  res.status(httpStatus.OK).json({ message: 'Email added' });
+});
