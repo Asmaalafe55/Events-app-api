@@ -24,11 +24,15 @@ export const getUserById = catchAsync(async (req, res) => {
 });
 
 export const getUserByEmail = catchAsync(async (req, res) => {
-  const email = req.body.email;
+  const email = req.params.email;
   if (!email) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Missing email');
   }
-  const user = await Users.findOne({ email });
+  // Select which fields you want to retrieve (excluding password)
+  const projection = '-password';
+
+  const user = await Users.findOne({ email }).select(projection);
+
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
   }
