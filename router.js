@@ -29,11 +29,26 @@ import {
 } from './controllers/users.controller.js';
 
 import { login, register } from './controllers/auth.controller.js';
+import {
+  updateDescription,
+  updateAvatar,
+  updateImage,
+  updateAddress,
+  updateBirthdate,
+  updateGender,
+} from './controllers/usersInfo.controller.js';
 
 // import logout from './controllers/logout.controller.js';
 
 import express from 'express';
 const router = express.Router();
+
+router.put('/update-description/:id', updateDescription);
+router.put('/update-avatar/:id', updateAvatar);
+router.put('/update-image/:id', updateImage);
+router.put('/update-address/:id', updateAddress);
+router.put('/update-birthdate/:id', updateBirthdate);
+router.put('/update-gender/:id', updateGender);
 
 router.get('/users', getUsers);
 router.get('/users/:id', getUserById);
@@ -41,7 +56,6 @@ router.get('/users/email/:email', getUserByEmail);
 router.post('/create-user', createUser);
 router.put('/update-user/:id', updateUser);
 router.delete('/delete-user/:id', deleteUser);
-
 
 router.post('/login', login);
 router.post('/register', register);
