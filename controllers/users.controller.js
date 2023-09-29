@@ -36,6 +36,7 @@ export const getUserByEmail = catchAsync(async (req, res) => {
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
   }
+  console.log(user);
   res.status(httpStatus.OK).send(user);
 });
 
@@ -50,6 +51,12 @@ export const createUser = catchAsync(async (req, res) => {
     lastName: lastName,
     email: email,
     password: password,
+    description: null,
+    avatar: null,
+    image: null,
+    address: null,
+    birthdate: null,
+    gender: null,
   });
 
   if (!user) {
