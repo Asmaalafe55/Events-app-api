@@ -111,4 +111,43 @@ export const register = catchAsync(async (req, res) => {
   });
 });
 
-export const renew_token = catchAsync(async (req, res) => {});
+// Existing route for token renewal
+export const renewToken = catchAsync(async (req, res) => {
+  const token = req.headers.authorization.split(' ')[1]; // Assuming token is sent in the Authorization header
+  console.log('Request Headers:', req.headers);
+
+  jwt.verify(token, SECRET, (err, decodedToken) => {
+    if (err) {
+      return res
+        .status(httpStatus.UNAUTHORIZED)
+        .send({ message: 'Invalid token' });
+    }
+
+    const { lastActivityTimestamp } = decodedToken;
+
+    const currentTime = Math.floor(Date.now() / 1000); // Current timestamp in seconds
+    const maxInactiveTime = 15 * 60; // Max inactive time allowed: 15 minutes in seconds
+
+    const isUserActive = currentTime - lastActivityTimestamp <= maxInactiveTime;
+
+    if (isUserActive) {
+      // User is active, renew the token and send it back
+      const newToken = jwt.sign(
+        { id: decodedToken.id, lastActivityTimestamp: currentTime },
+        SECRET,
+        { expiresIn: '2h' }
+      );
+
+      // Send the new token to the client
+      res.status(httpStatus.OK).send({
+        status: httpStatus.OK,
+        access_token: newToken,
+      });
+    } else {
+      // User is not active, handle accordingly (e.g., prompt for re-authentication)
+      res
+        .status(httpStatus.UNAUTHORIZED)
+        .send({ message: 'User is not active, re-authentication required' });
+    }
+  });
+});
