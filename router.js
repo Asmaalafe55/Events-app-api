@@ -28,7 +28,7 @@ import {
   deleteUser,
 } from './controllers/users.controller.js';
 
-import { login, register } from './controllers/auth.controller.js';
+import { login, register, renewToken } from './controllers/auth.controller.js';
 import {
   updateDescription,
   updateAvatar,
@@ -59,6 +59,7 @@ router.delete('/delete-user/:id', deleteUser);
 
 router.post('/login', login);
 router.post('/register', register);
+router.post('/renew-token', renewToken);
 
 router.post('/emailNewsletter', emailNewsletter);
 

@@ -114,6 +114,7 @@ export const register = catchAsync(async (req, res) => {
 // Existing route for token renewal
 export const renewToken = catchAsync(async (req, res) => {
   const token = req.headers.authorization.split(' ')[1]; // Assuming token is sent in the Authorization header
+
   console.log('Request Headers:', req.headers);
 
   jwt.verify(token, SECRET, (err, decodedToken) => {
@@ -144,7 +145,7 @@ export const renewToken = catchAsync(async (req, res) => {
         access_token: newToken,
       });
     } else {
-      // User is not active, handle accordingly (e.g., prompt for re-authentication)
+      // User is not active
       res
         .status(httpStatus.UNAUTHORIZED)
         .send({ message: 'User is not active, re-authentication required' });
