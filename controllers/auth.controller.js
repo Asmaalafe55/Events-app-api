@@ -111,7 +111,6 @@ export const register = catchAsync(async (req, res) => {
   });
 });
 
-// Existing route for token renewal
 export const renewToken = catchAsync(async (req, res) => {
   const token = req.headers.authorization.split(' ')[1]; // Assuming token is sent in the Authorization header
 
