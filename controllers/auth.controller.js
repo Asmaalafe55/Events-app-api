@@ -43,7 +43,7 @@ export const login = catchAsync(async (req, res) => {
   const token = jwt.sign(
     { id: user._id, lastActivityTimestamp },
     SECRET,
-    { expiresIn: '2h' } // Token expires in 2 hours
+    { expiresIn: '10m' } // Token expires in 2 hours
   );
 
   res.status(httpStatus.OK).send({
@@ -99,7 +99,7 @@ export const register = catchAsync(async (req, res) => {
   const token = jwt.sign(
     { id: newUser._id, lastActivityTimestamp },
     SECRET,
-    { expiresIn: '2h' } // Token expires in 2 hours
+    { expiresIn: '10m' } // Token expires in 2 hours
   );
 
   res.status(httpStatus.CREATED).send({
@@ -135,7 +135,7 @@ export const renewToken = catchAsync(async (req, res) => {
       const newToken = jwt.sign(
         { id: decodedToken.id, lastActivityTimestamp: currentTime },
         SECRET,
-        { expiresIn: '2h' }
+        { expiresIn: '10m' }
       );
 
       // Send the new token to the client
