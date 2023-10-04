@@ -36,7 +36,15 @@ export const login = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials');
   }
 
-  const token = jwt.sign({ id: user._id }, SECRET);
+  // Get the current timestamp in seconds
+  const lastActivityTimestamp = Math.floor(Date.now() / 1000);
+
+  // Generate a token with expiration time and last activity timestamp
+  const token = jwt.sign(
+    { id: user._id, lastActivityTimestamp },
+    SECRET,
+    { expiresIn: '2h' } // Token expires in 2 hours
+  );
 
   res.status(httpStatus.OK).send({
     status: httpStatus.OK,
@@ -84,7 +92,15 @@ export const register = catchAsync(async (req, res) => {
     );
   }
 
-  const token = jwt.sign({ userId: newUser._id }, SECRET);
+  // Get the current timestamp in seconds
+  const lastActivityTimestamp = Math.floor(Date.now() / 1000);
+
+  // Generate a token with expiration time and last activity timestamp
+  const token = jwt.sign(
+    { id: newUser._id, lastActivityTimestamp },
+    SECRET,
+    { expiresIn: '2h' } // Token expires in 2 hours
+  );
 
   res.status(httpStatus.CREATED).send({
     id: newUser._id,
@@ -94,3 +110,5 @@ export const register = catchAsync(async (req, res) => {
     access_token: token,
   });
 });
+
+export const renew_token = catchAsync(async (req, res) => {});
