@@ -5,17 +5,13 @@ import jwt from 'jsonwebtoken';
 import catchAsync from '../utils/catchAsync.js';
 import httpStatus from 'http-status';
 import { config } from 'dotenv';
-import Joi from 'joi';
+import {
+  loginValidationSchema,
+  registerValidationSchema,
+} from '../utils/joiSchemas.js';
 config();
 
 const SECRET = process.env.JWT_SECRET;
-
-const loginValidationSchema = Joi.object({
-  email: Joi.string()
-    .email({ tlds: { allow: ['com', 'net', 'org'] } })
-    .required(),
-  password: Joi.string().required(),
-});
 
 export const login = catchAsync(async (req, res) => {
   const { error, value } = loginValidationSchema.validate(req.body);
@@ -36,22 +32,22 @@ export const login = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials');
   }
 
-  const token = jwt.sign({ id: user._id }, SECRET);
+  // Get the current timestamp in seconds
+  const lastActivityTimestamp = Math.floor(Date.now() / 1000);
+
+  // Generate a token with expiration time and last activity timestamp
+  const token = jwt.sign(
+    { id: user._id, lastActivityTimestamp },
+    SECRET,
+    { expiresIn: '2h' } // Token expires in 2 hours
+  );
 
   res.status(httpStatus.OK).send({
     status: httpStatus.OK,
+    id: user._id,
     email: user.email,
     access_token: token,
   });
-});
-
-const registerValidationSchema = Joi.object({
-  firstName: Joi.string().required(),
-  lastName: Joi.string().required(),
-  email: Joi.string()
-    .email({ tlds: { allow: ['com', 'net', 'org'] } })
-    .required(),
-  password: Joi.string().min(6).required(),
 });
 
 export const register = catchAsync(async (req, res) => {
@@ -84,7 +80,15 @@ export const register = catchAsync(async (req, res) => {
     );
   }
 
-  const token = jwt.sign({ userId: newUser._id }, SECRET);
+  // Get the current timestamp in seconds
+  const lastActivityTimestamp = Math.floor(Date.now() / 1000);
+
+  // Generate a token with expiration time and last activity timestamp
+  const token = jwt.sign(
+    { id: newUser._id, lastActivityTimestamp },
+    SECRET,
+    { expiresIn: '2h' } // Token expires in 2 hours
+  );
 
   res.status(httpStatus.CREATED).send({
     id: newUser._id,
@@ -92,5 +96,46 @@ export const register = catchAsync(async (req, res) => {
     firstName: newUser.firstName,
     lastName: newUser.lastName,
     access_token: token,
+  });
+});
+
+export const renewToken = catchAsync(async (req, res) => {
+  const token = req.headers.authorization.split(' ')[1]; // Assuming token is sent in the Authorization header
+
+  console.log('Request Headers:', req.headers);
+
+  jwt.verify(token, SECRET, (err, decodedToken) => {
+    if (err) {
+      return res
+        .status(httpStatus.UNAUTHORIZED)
+        .send({ message: 'Invalid token' });
+    }
+
+    const { lastActivityTimestamp } = decodedToken;
+
+    const currentTime = Math.floor(Date.now() / 1000); // Current timestamp in seconds
+    const maxInactiveTime = 15 * 60; // Max inactive time allowed: 15 minutes in seconds
+
+    const isUserActive = currentTime - lastActivityTimestamp <= maxInactiveTime;
+
+    if (isUserActive) {
+      // User is active, renew the token and send it back
+      const newToken = jwt.sign(
+        { id: decodedToken.id, lastActivityTimestamp: currentTime },
+        SECRET,
+        { expiresIn: '2h' }
+      );
+
+      // Send the new token to the client
+      res.status(httpStatus.OK).send({
+        status: httpStatus.OK,
+        access_token: newToken,
+      });
+    } else {
+      // User is not active
+      res
+        .status(httpStatus.UNAUTHORIZED)
+        .send({ message: 'User is not active, re-authentication required' });
+    }
   });
 });
