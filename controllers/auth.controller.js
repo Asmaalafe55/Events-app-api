@@ -44,6 +44,7 @@ export const login = catchAsync(async (req, res) => {
 
   res.status(httpStatus.OK).send({
     status: httpStatus.OK,
+    id: user._id,
     email: user.email,
     access_token: token,
   });
