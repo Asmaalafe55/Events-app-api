@@ -9,17 +9,9 @@ import {
   loginValidationSchema,
   registerValidationSchema,
 } from '../utils/joiSchemas.js';
-// import Joi from 'joi';
 config();
 
 const SECRET = process.env.JWT_SECRET;
-
-// const loginValidationSchema = Joi.object({
-//   email: Joi.string()
-//     .email({ tlds: { allow: ['com', 'net', 'org'] } })
-//     .required(),
-//   password: Joi.string().required(),
-// });
 
 export const login = catchAsync(async (req, res) => {
   const { error, value } = loginValidationSchema.validate(req.body);
@@ -56,15 +48,6 @@ export const login = catchAsync(async (req, res) => {
     access_token: token,
   });
 });
-
-// const registerValidationSchema = Joi.object({
-//   firstName: Joi.string().required(),
-//   lastName: Joi.string().required(),
-//   email: Joi.string()
-//     .email({ tlds: { allow: ['com', 'net', 'org'] } })
-//     .required(),
-//   password: Joi.string().min(6).required(),
-// });
 
 export const register = catchAsync(async (req, res) => {
   const { error, value } = registerValidationSchema.validate(req.body);
