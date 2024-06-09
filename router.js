@@ -1,6 +1,7 @@
 import { addEmail } from './controllers/emailRegistration.js';
 import { emailNewsletter } from './controllers/emailNewsletter.js';
 import { contact } from './controllers/contact.controller.js';
+import { addLikedEvent, getLikedEvents } from './controllers/likedEvents.controller.js';
 
 import {
   getCategories,
@@ -63,5 +64,8 @@ router.get('/events/:id', getEventById);
 router.post('/create-event', createEvent);
 router.put('/update-event/:id', updateEvent);
 router.delete('/delete-event/:id', deleteEvent);
+
+router.post('/like',addLikedEvent);
+router.get('/likes/:userId',getLikedEvents);
 
 export default router;
