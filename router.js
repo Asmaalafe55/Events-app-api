@@ -38,7 +38,7 @@ const router = express.Router();
 
 router.get('/users', getUsers);
 router.get('/users/:id', getUserById);
-// router.get('/users/email/:email', getUserByEmail);
+router.get('/users/email/:email', getUserByEmail);
 router.post('/create-user', createUser);
 router.put('/update-user/:id', updateUser);
 router.delete('/delete-user/:id', deleteUser);

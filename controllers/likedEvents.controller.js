@@ -1,7 +1,7 @@
 import ApiError from '../utils/ApiError.js';
 import catchAsync from '../utils/catchAsync.js';
 import httpStatus from 'http-status';
-import LikedEvents from './likedEvents.model.js';
+import LikedEvents from '../models/likedEvents.model.js'
 
 export const addLikedEvent = catchAsync(async (req, res, next) => {
   const { userId, eventId } = req.body;
@@ -24,7 +24,7 @@ export const addLikedEvent = catchAsync(async (req, res, next) => {
 
   
   export const getLikedEvents = catchAsync(async (req, res, next) => {
-    const { userId } = req.params;
+    const { userId } = req.params.userId;
     
     const likedEvents = await LikedEvents.find({ userId }).populate('eventId');
     

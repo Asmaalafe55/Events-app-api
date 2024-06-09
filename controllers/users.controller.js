@@ -24,7 +24,7 @@ export const getUserById = catchAsync(async (req, res) => {
 });
 
 export const getUserByEmail = catchAsync(async (req, res) => {
-  const email = req.body.email;
+  const email = req.params.email;
   if (!email) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Missing email');
   }
