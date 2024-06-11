@@ -66,6 +66,6 @@ router.put('/update-event/:id', updateEvent);
 router.delete('/delete-event/:id', deleteEvent);
 
 router.post('/like',addLikedEvent);
-router.get('/likes/:userId',getLikedEvents);
+router.get('/likes/:id', getLikedEvents);
 
 export default router;

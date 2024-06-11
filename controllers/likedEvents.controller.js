@@ -3,7 +3,7 @@ import catchAsync from '../utils/catchAsync.js';
 import httpStatus from 'http-status';
 import LikedEvents from '../models/likedEvents.model.js'
 
-export const addLikedEvent = catchAsync(async (req, res, next) => {
+export const addLikedEvent = catchAsync(async (req, res) => {
   const { userId, eventId } = req.body;
 
   // Check if the event is already liked by the user
@@ -22,11 +22,19 @@ export const addLikedEvent = catchAsync(async (req, res, next) => {
   res.status(httpStatus.CREATED).json(likedEvent);
 });
 
+
+export const getLikedEvents = catchAsync(async (req, res) => {
+  const { id } = req.params;
+
+  console.log("User ID:", id); // Debugging line
+
+  const likedEvents = await LikedEvents.find({ userId: id }).populate('eventId');
+
+  console.log("Liked events:", likedEvents); // Debugging line
   
-  export const getLikedEvents = catchAsync(async (req, res, next) => {
-    const { userId } = req.params.userId;
-    
-    const likedEvents = await LikedEvents.find({ userId }).populate('eventId');
-    
-    res.status(httpStatus.OK).json(likedEvents);
-  });
+  if (!likedEvents) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'No liked events found');
+  }
+  res.status(httpStatus.OK).send(likedEvents);
+});
+

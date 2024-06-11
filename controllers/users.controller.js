@@ -28,7 +28,8 @@ export const getUserByEmail = catchAsync(async (req, res) => {
   if (!email) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Missing email');
   }
-  const user = await Users.findOne({ email });
+  const user = await Users.findOne({ email }).select('-password');
+
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
   }
