@@ -80,14 +80,18 @@ export const updateUser = catchAsync(async (req, res) => { // i need to change t
 
 export const updateUserInfo = catchAsync(async (req, res) => {
   const { userId } = req.params;
-  const { firstName, lastName, profileDescription, avatarUrl } = req.body;
+  const { firstName, lastName, description, avatarUrl } = req.body;
+
+  console.log("checking user id",userId);
+  console.log("checking first name",firstName);
+
 
   const updatedUser = await Users.findByIdAndUpdate(
     userId,
     {
       firstName,
       lastName,
-      profileDescription,
+      description,
       avatarUrl,
     },
     { new: true, runValidators: true }
