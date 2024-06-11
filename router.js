@@ -26,6 +26,7 @@ import {
   getUserById,
   createUser,
   updateUser,
+  updateUserInfo,
   deleteUser,
 } from './controllers/users.controller.js';
 
@@ -41,6 +42,7 @@ router.get('/users/:id', getUserById);
 router.get('/users/email/:email', getUserByEmail);
 router.post('/create-user', createUser);
 router.put('/update-user/:id', updateUser);
+router.put('/users/:userId', updateUserInfo);
 router.delete('/delete-user/:id', deleteUser);
 
 router.post('/login', login);
