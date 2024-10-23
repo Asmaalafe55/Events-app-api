@@ -24,14 +24,19 @@ export const getUserById = catchAsync(async (req, res) => {
 });
 
 export const getUserByEmail = catchAsync(async (req, res) => {
-  const email = req.body.email;
+  const email = req.params.email;
   if (!email) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Missing email');
   }
-  const user = await Users.findOne({ email });
+  // Select which fields you want to retrieve (excluding password)
+  const projection = '-password';
+
+  const user = await Users.findOne({ email }).select(projection);
+
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
   }
+  console.log(user);
   res.status(httpStatus.OK).send(user);
 });
 
@@ -46,6 +51,12 @@ export const createUser = catchAsync(async (req, res) => {
     lastName: lastName,
     email: email,
     password: password,
+    description: null,
+    avatar: null,
+    image: null,
+    address: null,
+    birthdate: null,
+    gender: null,
   });
 
   if (!user) {
