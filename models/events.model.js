@@ -9,8 +9,13 @@ const EventsSchema = new mongoose.Schema({
   description: String,
   image: String,
   emails_registered: [String],
+  likes: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const Events = mongoose.model('Events', EventsSchema);
 
 export default Events;
+

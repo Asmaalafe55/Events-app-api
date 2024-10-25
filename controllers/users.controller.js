@@ -69,6 +69,7 @@ export const createUser = catchAsync(async (req, res) => {
 });
 
 export const updateUser = catchAsync(async (req, res) => {
+  // i need to change this function to update email or password
   const { firstName, lastName, email, password } = req.body;
   const id = req.params.id;
 
@@ -86,6 +87,31 @@ export const updateUser = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
   }
   res.status(httpStatus.OK).send(user);
+});
+
+export const updateUserInfo = catchAsync(async (req, res) => {
+  const { userId } = req.params;
+  const { firstName, lastName, description, avatarUrl } = req.body;
+
+  console.log('checking user id', userId);
+  console.log('checking first name', firstName);
+
+  const updatedUser = await Users.findByIdAndUpdate(
+    userId,
+    {
+      firstName,
+      lastName,
+      description,
+      avatarUrl,
+    },
+    { new: true, runValidators: true }
+  );
+
+  if (!updatedUser) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
+  }
+
+  res.status(httpStatus.OK).send(updatedUser);
 });
 
 export const deleteUser = catchAsync(async (req, res) => {

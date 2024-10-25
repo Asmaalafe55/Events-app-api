@@ -6,11 +6,15 @@ export const UsersSchema = new mongoose.Schema({
   email: String,
   password: String,
   description: String,
-  avatar: String,
-  image: String,
-  address: String,
-  birthdate: Date,
-  gender: String,
+  // <<<<<<< HEAD
+  // avatar: String,
+  // image: String,
+  // address: String,
+  // birthdate: Date,
+  // gender: String,
+  // =======
+  avatarUrl: String,
+  // >>>>>>> bd4e75f2b7bdae1f82f3e198e3111e6842339172
 });
 
 const Users = mongoose.model('Users', UsersSchema);
