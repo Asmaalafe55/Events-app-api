@@ -65,6 +65,33 @@ export const adminOnly = async (req, res, next) => {
   }
 };
 
+export const attachUser = async (req, res, next) => {
+  try {
+    if (!req.user?.id) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, 'Authentication required');
+    }
+    const user = await Users.findById(req.user.id).select('-password');
+    if (!user) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, 'User not found');
+    }
+    if (user.status === 'suspended') {
+      throw new ApiError(httpStatus.FORBIDDEN, 'Account suspended');
+    }
+    req.currentUser = user;
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const requireRoles = (...roles) => (req, res, next) => {
+  const role = req.currentUser?.role;
+  if (role === 'admin' || roles.includes(role)) {
+    return next();
+  }
+  next(new ApiError(httpStatus.FORBIDDEN, 'You do not have permission'));
+};
+
 export const isAdminUser = (user) =>
   user?.role === 'admin' ||
   adminEmails.includes((user?.email || '').toLowerCase());

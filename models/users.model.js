@@ -12,6 +12,7 @@ export const UsersSchema = new mongoose.Schema(
     birthdate: Date,
     gender: { type: String, default: '' },
     role: { type: String, enum: ['user', 'admin', 'organizer'], default: 'user' },
+    status: { type: String, enum: ['active', 'suspended'], default: 'active' },
     registeredEvents: { type: [String], default: [] },
   },
   { timestamps: true }

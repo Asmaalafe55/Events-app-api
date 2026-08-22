@@ -108,6 +108,7 @@ export const getRelatedEvents = catchAsync(async (req, res) => {
 export const createEvent = catchAsync(async (req, res) => {
   const payload = { ...req.body };
   payload.id = payload.id || slugify(payload.title);
+  const user = req.currentUser;
 
   if (payload.category && typeof payload.category === 'string') {
     const category = await Categories.findOne({
@@ -120,6 +121,12 @@ export const createEvent = catchAsync(async (req, res) => {
     payload.city = payload.city || category.title;
   }
 
+  if (user.role !== 'admin' || !payload.organizerEmail) {
+    payload.organizerEmail = user.email;
+    payload.organizer =
+      payload.organizer || `${user.firstName || ''} ${user.lastName || ''}`.trim();
+  }
+
   const existing = await findEventById(payload.id);
   if (existing) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Event already exists');
@@ -130,6 +137,15 @@ export const createEvent = catchAsync(async (req, res) => {
 });
 
 export const updateEvent = catchAsync(async (req, res) => {
+  const existing = await findEventById(req.params.id);
+  if (!existing) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Event not found');
+  }
+  const user = req.currentUser;
+  if (user.role !== 'admin' && existing.organizerEmail !== user.email) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'You can only edit your own events');
+  }
+
   const payload = { ...req.body };
 
   if (payload.category && typeof payload.category === 'string') {
@@ -141,21 +157,26 @@ export const updateEvent = catchAsync(async (req, res) => {
     }
     payload.category = category;
   }
+  if (user.role !== 'admin') {
+    delete payload.organizerEmail;
+  }
 
   const event = await Events.findOneAndUpdate({ id: req.params.id }, payload, {
     new: true,
   });
-  if (!event) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Event not found');
-  }
   res.status(httpStatus.OK).json(event);
 });
 
 export const deleteEvent = catchAsync(async (req, res) => {
-  const event = await Events.findOneAndDelete({ id: req.params.id });
-  if (!event) {
+  const existing = await findEventById(req.params.id);
+  if (!existing) {
     throw new ApiError(httpStatus.NOT_FOUND, 'Event not found');
   }
+  const user = req.currentUser;
+  if (user.role !== 'admin' && existing.organizerEmail !== user.email) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'You can only delete your own events');
+  }
+  await Events.findOneAndDelete({ id: req.params.id });
   await LikedEvents.deleteMany({ eventId: req.params.id });
   res.status(httpStatus.NO_CONTENT).json();
 });

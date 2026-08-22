@@ -30,13 +30,23 @@ import {
   getUsers,
   getUserByEmail,
   getUserById,
-  createUser,
   updateUser,
   updateUserInfo,
   deleteUser,
 } from './controllers/users.controller.js';
 
 import { login, register, renewToken } from './controllers/auth.controller.js';
+import {
+  getMe,
+  getDashboard,
+  getAnalytics,
+  getBilling,
+  getOrganizerEvents,
+  getEventRegistrants,
+  updateUserRole,
+  updateUserStatus,
+  adminCreateUser,
+} from './controllers/roles.controller.js';
 import {
   updateDescription,
   updateAvatar,
@@ -45,7 +55,7 @@ import {
   updateBirthdate,
   updateGender,
 } from './controllers/usersInfo.controller.js';
-import { auth, optionalAuth, adminOnly } from './middlewares/auth.js';
+import { auth, optionalAuth, adminOnly, attachUser, requireRoles } from './middlewares/auth.js';
 
 import express from 'express';
 const router = express.Router();
@@ -66,15 +76,23 @@ router.put('/update-gender/:id', auth, updateGender);
 router.get('/users', auth, adminOnly, getUsers);
 router.get('/users/email/:email', getUserByEmail);
 router.get('/users/:id/registered-events', getRegisteredEvents);
+router.put('/users/:id/role', auth, attachUser, adminOnly, updateUserRole);
+router.put('/users/:id/status', auth, attachUser, adminOnly, updateUserStatus);
 router.get('/users/:id', getUserById);
-router.post('/create-user', auth, adminOnly, createUser);
+router.post('/create-user', auth, adminOnly, adminCreateUser);
 router.put('/update-user/:id', auth, updateUser);
 router.put('/users/update/:id', auth, updateUserInfo);
 router.delete('/delete-user/:id', auth, adminOnly, deleteUser);
+router.delete('/users/:id', auth, attachUser, adminOnly, deleteUser);
 
 router.post('/login', login);
 router.post('/register', register);
 router.post('/renew-token', renewToken);
+router.get('/me', auth, attachUser, getMe);
+router.get('/dashboard', auth, attachUser, getDashboard);
+router.get('/analytics', auth, attachUser, adminOnly, getAnalytics);
+router.get('/billing', auth, attachUser, getBilling);
+router.get('/organizer/events', auth, attachUser, requireRoles('organizer'), getOrganizerEvents);
 
 router.post('/emailNewsletter', emailNewsletter);
 router.post('/contact', contact);
@@ -89,10 +107,11 @@ router.delete('/delete-category/:id', auth, adminOnly, deleteCategory);
 router.get('/events', getEvents);
 router.get('/events/category/:category', getEventsByCategoty);
 router.get('/events/:id/related', getRelatedEvents);
+router.get('/events/:id/registrants', auth, attachUser, getEventRegistrants);
 router.get('/events/:id', getEventById);
-router.post('/create-event', auth, adminOnly, createEvent);
-router.put('/update-event/:id', auth, adminOnly, updateEvent);
-router.delete('/delete-event/:id', auth, adminOnly, deleteEvent);
+router.post('/create-event', auth, attachUser, requireRoles('organizer'), createEvent);
+router.put('/update-event/:id', auth, attachUser, requireRoles('organizer'), updateEvent);
+router.delete('/delete-event/:id', auth, attachUser, requireRoles('organizer'), deleteEvent);
 
 router.post('/like', auth, addLikedEvent);
 router.get('/likes/:id', getLikedEvents);

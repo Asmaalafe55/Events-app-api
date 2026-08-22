@@ -49,6 +49,10 @@ export const login = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid email or password');
   }
 
+  if (user.status === 'suspended') {
+    throw new ApiError(httpStatus.FORBIDDEN, 'Account suspended');
+  }
+
   const token = signToken(user);
   res.status(httpStatus.OK).send(authPayload(user, token));
 });

@@ -23,6 +23,7 @@ const EventsSchema = new mongoose.Schema(
     city: { type: String, default: '' },
     price: { type: String, default: 'Free' },
     organizer: { type: String, default: '' },
+    organizerEmail: { type: String, default: '' },
     type: { type: String, default: 'event' },
     lat: { type: Number, default: null },
     lng: { type: Number, default: null },

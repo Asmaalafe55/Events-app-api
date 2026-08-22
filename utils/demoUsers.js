@@ -55,6 +55,7 @@ export const hashedDemoUsers = (withIds = true) =>
     registeredEvents: [...user.registeredEvents],
     avatarUrl: '',
     address: '',
+    status: 'active',
   }));
 
 export const applyDemoRegistrations = (users, events) => {

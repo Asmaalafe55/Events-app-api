@@ -21,6 +21,104 @@ const publicUser = (user) => {
   return rest;
 };
 
+const getCurrentUser = (req) => {
+  const header = req.headers.authorization || '';
+  if (!header.startsWith('Bearer ')) return null;
+  try {
+    const decoded = jwt.verify(header.split(' ')[1], SECRET);
+    return localStore.users.find((item) => item._id === decoded.id) || null;
+  } catch {
+    return null;
+  }
+};
+
+const requireUser = (req, res) => {
+  const user = getCurrentUser(req);
+  if (!user) {
+    res.status(401).json({ message: 'Authentication required' });
+    return null;
+  }
+  if (user.status === 'suspended') {
+    res.status(403).json({ message: 'Account suspended' });
+    return null;
+  }
+  return user;
+};
+
+const isAdmin = (user) => user?.role === 'admin';
+const isOrganizer = (user) => user?.role === 'organizer';
+const canManageEvents = (user) => isAdmin(user) || isOrganizer(user);
+const ownsEvent = (user, event) =>
+  isAdmin(user) || (event && event.organizerEmail === user.email);
+
+const slugify = (value = '') =>
+  value
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/['"]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+
+const registrantsFor = (event) =>
+  localStore.users
+    .filter(
+      (user) =>
+        event.emails_registered?.includes(user.email) ||
+        user.registeredEvents?.includes(event.id)
+    )
+    .map(publicUser);
+
+const withEventMeta = (event) => ({
+  ...event,
+  attendees: event.emails_registered?.length || 0,
+  registrants: registrantsFor(event),
+});
+
+const resolveCategory = (value) => {
+  if (!value) return null;
+  if (typeof value === 'object') return value;
+  return localStore.categories.find((item) => item.category === value) || null;
+};
+
+const billingFor = (user) => {
+  const events = localStore.events.filter(
+    (event) =>
+      user.registeredEvents?.includes(event.id) ||
+      event.emails_registered?.includes(user.email)
+  );
+  return events.map((event) => ({
+    id: `${user._id}-${event.id}`,
+    eventId: event.id,
+    title: event.title,
+    date: event.date,
+    amount: event.price || 'Free',
+    status: !event.price || /free/i.test(event.price) ? 'free' : 'paid',
+  }));
+};
+
+const analyticsPayload = () => {
+  const users = localStore.users.map(publicUser);
+  const events = localStore.events.map(withEventMeta);
+  return {
+    users: users.length,
+    guests: users.filter((item) => item.role === 'user').length,
+    organizers: users.filter((item) => item.role === 'organizer').length,
+    admins: users.filter((item) => item.role === 'admin').length,
+    events: events.length,
+    likes: localStore.likes.length,
+    registrations: events.reduce((sum, event) => sum + event.attendees, 0),
+    topEvents: [...events].sort((a, b) => b.attendees - a.attendees).slice(0, 5),
+    byCity: localStore.categories.map((city) => ({
+      city: city.title,
+      events: events.filter((event) => event.category?.category === city.category).length,
+      registrations: events
+        .filter((event) => event.category?.category === city.category)
+        .reduce((sum, event) => sum + event.attendees, 0),
+    })),
+  };
+};
+
 router.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'events-app-api', mode: 'local' });
 });
@@ -157,6 +255,9 @@ router.post('/login', (req, res) => {
   if (!user || !bcrypt.compareSync(password, user.password)) {
     return res.status(400).json({ message: 'Invalid email or password' });
   }
+  if (user.status === 'suspended') {
+    return res.status(403).json({ message: 'Account suspended' });
+  }
   const adminEmails = (process.env.ADMIN_EMAILS || '')
     .split(',')
     .map((item) => item.trim().toLowerCase());
@@ -175,7 +276,169 @@ router.post('/login', (req, res) => {
   });
 });
 
+router.get('/me', (req, res) => {
+  const user = requireUser(req, res);
+  if (!user) return;
+  res.json(publicUser(user));
+});
+
+router.get('/dashboard', (req, res) => {
+  const user = requireUser(req, res);
+  if (!user) return;
+  if (isAdmin(user)) {
+    return res.json({ role: 'admin', analytics: analyticsPayload() });
+  }
+  if (isOrganizer(user)) {
+    const mine = localStore.events
+      .filter((event) => event.organizerEmail === user.email)
+      .map(withEventMeta);
+    return res.json({
+      role: 'organizer',
+      events: mine,
+      stats: {
+        events: mine.length,
+        registrations: mine.reduce((sum, event) => sum + event.attendees, 0),
+        likes: mine.reduce((sum, event) => sum + (event.likes || 0), 0),
+      },
+    });
+  }
+  res.json({
+    role: 'user',
+    billing: billingFor(user),
+  });
+});
+
+router.get('/analytics', (req, res) => {
+  const user = requireUser(req, res);
+  if (!user) return;
+  if (!isAdmin(user)) {
+    return res.status(403).json({ message: 'Admin access required' });
+  }
+  res.json(analyticsPayload());
+});
+
+router.get('/billing', (req, res) => {
+  const user = requireUser(req, res);
+  if (!user) return;
+  res.json(billingFor(user));
+});
+
+router.get('/organizer/events', (req, res) => {
+  const user = requireUser(req, res);
+  if (!user) return;
+  if (!canManageEvents(user)) {
+    return res.status(403).json({ message: 'Organizer access required' });
+  }
+  const list = isAdmin(user)
+    ? localStore.events
+    : localStore.events.filter((event) => event.organizerEmail === user.email);
+  res.json(list.map(withEventMeta));
+});
+
+router.get('/events/:id/registrants', (req, res) => {
+  const user = requireUser(req, res);
+  if (!user) return;
+  const event = localStore.events.find((item) => item.id === req.params.id);
+  if (!event) {
+    return res.status(404).json({ message: 'Event not found' });
+  }
+  if (!ownsEvent(user, event)) {
+    return res.status(403).json({ message: 'You can only view your own events' });
+  }
+  res.json(registrantsFor(event));
+});
+
+router.put('/users/:id/role', (req, res) => {
+  const actor = requireUser(req, res);
+  if (!actor) return;
+  if (!isAdmin(actor)) {
+    return res.status(403).json({ message: 'Admin access required' });
+  }
+  const target = localStore.users.find((item) => item._id === req.params.id);
+  if (!target) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+  const role = req.body.role;
+  if (!['user', 'organizer', 'admin'].includes(role)) {
+    return res.status(400).json({ message: 'Invalid role' });
+  }
+  target.role = role;
+  res.json(publicUser(target));
+});
+
+router.put('/users/:id/status', (req, res) => {
+  const actor = requireUser(req, res);
+  if (!actor) return;
+  if (!isAdmin(actor)) {
+    return res.status(403).json({ message: 'Admin access required' });
+  }
+  const target = localStore.users.find((item) => item._id === req.params.id);
+  if (!target) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+  if (target._id === actor._id) {
+    return res.status(400).json({ message: 'You cannot change your own status' });
+  }
+  const status = req.body.status;
+  if (!['active', 'suspended'].includes(status)) {
+    return res.status(400).json({ message: 'Invalid status' });
+  }
+  target.status = status;
+  res.json(publicUser(target));
+});
+
+router.delete('/users/:id', (req, res) => {
+  const actor = requireUser(req, res);
+  if (!actor) return;
+  if (!isAdmin(actor)) {
+    return res.status(403).json({ message: 'Admin access required' });
+  }
+  const index = localStore.users.findIndex((item) => item._id === req.params.id);
+  if (index === -1) {
+    return res.status(404).json({ message: 'User not found' });
+  }
+  if (localStore.users[index]._id === actor._id) {
+    return res.status(400).json({ message: 'You cannot delete your own account' });
+  }
+  localStore.users.splice(index, 1);
+  res.json({ message: 'User deleted' });
+});
+
+router.post('/create-user', (req, res) => {
+  const actor = requireUser(req, res);
+  if (!actor) return;
+  if (!isAdmin(actor)) {
+    return res.status(403).json({ message: 'Admin access required' });
+  }
+  const { firstName, lastName, email, password, role } = req.body;
+  if (!firstName || !lastName || !email || !password) {
+    return res.status(400).json({ message: 'Missing fields' });
+  }
+  if (localStore.users.some((item) => item.email === email)) {
+    return res.status(400).json({ message: 'User already exists' });
+  }
+  const created = {
+    _id: `user-${Date.now()}`,
+    firstName,
+    lastName,
+    email,
+    password: bcrypt.hashSync(password, 8),
+    description: '',
+    avatarUrl: '',
+    role: ['user', 'organizer', 'admin'].includes(role) ? role : 'user',
+    status: 'active',
+    registeredEvents: [],
+  };
+  localStore.users.push(created);
+  res.status(201).json(publicUser(created));
+});
+
 router.get('/users', (req, res) => {
+  const actor = requireUser(req, res);
+  if (!actor) return;
+  if (!isAdmin(actor)) {
+    return res.status(403).json({ message: 'Admin access required' });
+  }
   res.json(localStore.users.map(publicUser));
 });
 
@@ -209,11 +472,17 @@ router.get('/users/:id', (req, res) => {
 });
 
 router.put('/users/update/:id', (req, res) => {
+  const actor = requireUser(req, res);
+  if (!actor) return;
   const user = localStore.users.find((item) => item._id === req.params.id);
   if (!user) {
     return res.status(404).json({ message: 'User not found' });
   }
-  Object.assign(user, req.body);
+  if (!isAdmin(actor) && actor._id !== user._id) {
+    return res.status(403).json({ message: 'You can only edit your own profile' });
+  }
+  const { password, role, status, ...safe } = req.body;
+  Object.assign(user, safe);
   res.json(publicUser(user));
 });
 
@@ -308,60 +577,83 @@ router.post('/renew-token', (req, res) => {
   }
 });
 
-const slugify = (value = '') =>
-  value
-    .toString()
-    .toLowerCase()
-    .trim()
-    .replace(/['"]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-
 router.post('/create-event', (req, res) => {
+  const user = requireUser(req, res);
+  if (!user) return;
+  if (!canManageEvents(user)) {
+    return res.status(403).json({ message: 'Organizer or admin access required' });
+  }
   const payload = { ...req.body };
   payload.id = payload.id || slugify(payload.title);
-  if (payload.category && typeof payload.category === 'string') {
-    const category = localStore.categories.find((item) => item.category === payload.category);
-    if (!category) {
-      return res.status(400).json({ message: 'Category not found' });
-    }
+  const category = resolveCategory(payload.category);
+  if (payload.category && !category) {
+    return res.status(400).json({ message: 'Category not found' });
+  }
+  if (category) {
     payload.category = category;
     payload.city = payload.city || category.title;
   }
   if (localStore.events.some((event) => event.id === payload.id)) {
     return res.status(400).json({ message: 'Event already exists' });
   }
-  localStore.events.push({ ...payload, emails_registered: [], likes: 0 });
-  res.status(201).json(payload);
+  if (!isAdmin(user) || !payload.organizerEmail) {
+    payload.organizerEmail = user.email;
+    payload.organizer = payload.organizer || `${user.firstName} ${user.lastName}`.trim();
+  }
+  const event = {
+    image: '/images/pic/e1.jpg',
+    emails_registered: [],
+    likes: 0,
+    wheelchairAccessible: true,
+    ...payload,
+  };
+  localStore.events.push(event);
+  res.status(201).json(withEventMeta(event));
 });
 
 router.put('/update-event/:id', (req, res) => {
+  const user = requireUser(req, res);
+  if (!user) return;
   const event = localStore.events.find((item) => item.id === req.params.id);
   if (!event) {
     return res.status(404).json({ message: 'Event not found' });
   }
+  if (!ownsEvent(user, event)) {
+    return res.status(403).json({ message: 'You can only edit your own events' });
+  }
   const payload = { ...req.body };
-  if (payload.category && typeof payload.category === 'string') {
-    const category = localStore.categories.find((item) => item.category === payload.category);
-    if (!category) {
-      return res.status(400).json({ message: 'Category not found' });
-    }
-    payload.category = category;
+  const category = resolveCategory(payload.category);
+  if (payload.category && !category) {
+    return res.status(400).json({ message: 'Category not found' });
+  }
+  if (category) payload.category = category;
+  if (!isAdmin(user)) {
+    delete payload.organizerEmail;
   }
   Object.assign(event, payload);
-  res.json(event);
+  res.json(withEventMeta(event));
 });
 
 router.delete('/delete-event/:id', (req, res) => {
+  const user = requireUser(req, res);
+  if (!user) return;
   const index = localStore.events.findIndex((item) => item.id === req.params.id);
   if (index === -1) {
     return res.status(404).json({ message: 'Event not found' });
+  }
+  if (!ownsEvent(user, localStore.events[index])) {
+    return res.status(403).json({ message: 'You can only delete your own events' });
   }
   localStore.events.splice(index, 1);
   res.status(204).end();
 });
 
 router.post('/add-category', (req, res) => {
+  const user = requireUser(req, res);
+  if (!user) return;
+  if (!isAdmin(user)) {
+    return res.status(403).json({ message: 'Admin access required' });
+  }
   if (localStore.categories.some((item) => item.category === req.body.category)) {
     return res.status(400).json({ message: 'Category already exists' });
   }
@@ -371,6 +663,11 @@ router.post('/add-category', (req, res) => {
 });
 
 router.put('/update-category/:id', (req, res) => {
+  const user = requireUser(req, res);
+  if (!user) return;
+  if (!isAdmin(user)) {
+    return res.status(403).json({ message: 'Admin access required' });
+  }
   const category = localStore.categories.find((item) => item._id === req.params.id);
   if (!category) {
     return res.status(404).json({ message: 'Category not found' });
@@ -380,6 +677,11 @@ router.put('/update-category/:id', (req, res) => {
 });
 
 router.delete('/delete-category/:id', (req, res) => {
+  const user = requireUser(req, res);
+  if (!user) return;
+  if (!isAdmin(user)) {
+    return res.status(403).json({ message: 'Admin access required' });
+  }
   const index = localStore.categories.findIndex((item) => item._id === req.params.id);
   if (index === -1) {
     return res.status(404).json({ message: 'Category not found' });

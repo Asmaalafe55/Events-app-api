@@ -81,12 +81,13 @@
       "venueAr": "زابا تل أبيب",
       "city": "Tel Aviv",
       "price": "₪120",
-      "organizer": "Zappa Live",
+      "organizer": "Noa Levi",
       "type": "concert",
       "lat": 32.0708,
       "lng": 34.794,
       "wheelchairAccessible": true,
-      "capacity": 400
+      "capacity": 400,
+      "organizerEmail": "noa@events.com"
     },
     {
       "id": "barby-indie-night",
@@ -107,12 +108,13 @@
       "venueAr": "نادي باربي",
       "city": "Tel Aviv",
       "price": "₪90",
-      "organizer": "Barby",
+      "organizer": "Noa Levi",
       "type": "concert",
       "lat": 32.0565,
       "lng": 34.7692,
       "wheelchairAccessible": false,
-      "capacity": 350
+      "capacity": 350,
+      "organizerEmail": "noa@events.com"
     },
     {
       "id": "dld-tel-aviv-2026",
@@ -133,12 +135,13 @@
       "venueAr": "إكسبو تل أبيب",
       "city": "Tel Aviv",
       "price": "₪250",
-      "organizer": "DLD Media",
+      "organizer": "Noa Levi",
       "type": "conference",
       "lat": 32.105,
       "lng": 34.808,
       "wheelchairAccessible": true,
-      "capacity": 2500
+      "capacity": 2500,
+      "organizerEmail": "noa@events.com"
     },
     {
       "id": "israel-festival-jerusalem-2026",
@@ -164,7 +167,8 @@
       "lat": 31.775,
       "lng": 35.219,
       "wheelchairAccessible": true,
-      "capacity": 900
+      "capacity": 900,
+      "organizerEmail": ""
     },
     {
       "id": "yellow-submarine-open-mic",
@@ -190,7 +194,8 @@
       "lat": 31.7544,
       "lng": 35.219,
       "wheelchairAccessible": true,
-      "capacity": 180
+      "capacity": 180,
+      "organizerEmail": ""
     },
     {
       "id": "sultans-pool-open-air",
@@ -216,7 +221,8 @@
       "lat": 31.771,
       "lng": 35.226,
       "wheelchairAccessible": true,
-      "capacity": 6000
+      "capacity": 6000,
+      "organizerEmail": ""
     },
     {
       "id": "hangar-11-port-night",
@@ -237,12 +243,13 @@
       "venueAr": "هانغار 11، ميناء تل أبيب",
       "city": "Tel Aviv",
       "price": "₪110",
-      "organizer": "Hangar 11",
+      "organizer": "Noa Levi",
       "type": "party",
       "lat": 32.0966,
       "lng": 34.7745,
       "wheelchairAccessible": true,
-      "capacity": 1800
+      "capacity": 1800,
+      "organizerEmail": "noa@events.com"
     },
     {
       "id": "haifa-film-festival-2026",
@@ -268,7 +275,8 @@
       "lat": 32.794,
       "lng": 34.9896,
       "wheelchairAccessible": true,
-      "capacity": 700
+      "capacity": 700,
+      "organizerEmail": ""
     },
     {
       "id": "menora-arena-live",
@@ -289,12 +297,13 @@
       "venueAr": "قاعة مينورا مفتحيم",
       "city": "Tel Aviv",
       "price": "₪180",
-      "organizer": "Shuki Weiss",
+      "organizer": "Noa Levi",
       "type": "concert",
       "lat": 32.061,
       "lng": 34.791,
       "wheelchairAccessible": true,
-      "capacity": 10383
+      "capacity": 10383,
+      "organizerEmail": "noa@events.com"
     },
     {
       "id": "rappaport-haifa-jazz",
@@ -320,7 +329,8 @@
       "lat": 32.7945,
       "lng": 34.985,
       "wheelchairAccessible": true,
-      "capacity": 460
+      "capacity": 460,
+      "organizerEmail": ""
     },
     {
       "id": "icon-festival-tel-aviv-2026",
@@ -346,7 +356,8 @@
       "lat": 32.105,
       "lng": 34.808,
       "wheelchairAccessible": true,
-      "capacity": 4000
+      "capacity": 4000,
+      "organizerEmail": ""
     },
     {
       "id": "indnegev-2026",
@@ -372,7 +383,8 @@
       "lat": 31.21,
       "lng": 34.47,
       "wheelchairAccessible": true,
-      "capacity": 8000
+      "capacity": 8000,
+      "organizerEmail": ""
     },
     {
       "id": "eilat-desert-night-2026",
@@ -398,7 +410,8 @@
       "lat": 29.5577,
       "lng": 34.9519,
       "wheelchairAccessible": false,
-      "capacity": 1200
+      "capacity": 1200,
+      "organizerEmail": ""
     },
     {
       "id": "bgu-negev-tech-summit",
@@ -424,7 +437,8 @@
       "lat": 31.262,
       "lng": 34.801,
       "wheelchairAccessible": true,
-      "capacity": 600
+      "capacity": 600,
+      "organizerEmail": ""
     },
     {
       "id": "fresh-paint-tel-aviv",
@@ -445,12 +459,13 @@
       "venueAr": "إكسبو تل أبيب",
       "city": "Tel Aviv",
       "price": "₪70",
-      "organizer": "Fresh Paint",
+      "organizer": "Noa Levi",
       "type": "expo",
       "lat": 32.105,
       "lng": 34.808,
       "wheelchairAccessible": true,
-      "capacity": 5000
+      "capacity": 5000,
+      "organizerEmail": "noa@events.com"
     },
     {
       "id": "jerusalem-piano-festival",
@@ -476,7 +491,8 @@
       "lat": 31.775,
       "lng": 35.219,
       "wheelchairAccessible": true,
-      "capacity": 750
+      "capacity": 750,
+      "organizerEmail": ""
     },
     {
       "id": "red-sea-jazz-eilat-2027",
@@ -502,7 +518,8 @@
       "lat": 29.548,
       "lng": 34.968,
       "wheelchairAccessible": true,
-      "capacity": 3500
+      "capacity": 3500,
+      "organizerEmail": ""
     },
     {
       "id": "ourcrowd-summit-jerusalem",
@@ -528,7 +545,8 @@
       "lat": 31.786,
       "lng": 35.203,
       "wheelchairAccessible": true,
-      "capacity": 3000
+      "capacity": 3000,
+      "organizerEmail": ""
     },
     {
       "id": "docaviv-2027",
@@ -554,7 +572,8 @@
       "lat": 32.073,
       "lng": 34.785,
       "wheelchairAccessible": true,
-      "capacity": 900
+      "capacity": 900,
+      "organizerEmail": ""
     },
     {
       "id": "midburn-2027",
@@ -580,7 +599,8 @@
       "lat": 30.85,
       "lng": 34.78,
       "wheelchairAccessible": true,
-      "capacity": 12000
+      "capacity": 12000,
+      "organizerEmail": ""
     }
   ]
 }
