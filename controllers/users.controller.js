@@ -2,21 +2,26 @@ import Users from '../models/users.model.js';
 import ApiError from '../utils/ApiError.js';
 import catchAsync from '../utils/catchAsync.js';
 import httpStatus from 'http-status';
+import bcrypt from 'bcrypt';
+
+const publicUser = (user) => {
+  if (!user) return user;
+  const value = user.toObject ? user.toObject() : { ...user };
+  delete value.password;
+  return value;
+};
 
 export const getUsers = catchAsync(async (req, res) => {
-  const users = await Users.find();
-  if (!users) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'Users not found');
-  }
+  const users = await Users.find().select('-password');
   res.status(httpStatus.OK).send(users);
 });
 
 export const getUserById = catchAsync(async (req, res) => {
-  const id = req.body.id;
+  const id = req.params.id;
   if (!id) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Missing id');
   }
-  const user = await Users.findById(id);
+  const user = await Users.findById(id).select('-password');
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
   }
@@ -28,60 +33,56 @@ export const getUserByEmail = catchAsync(async (req, res) => {
   if (!email) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Missing email');
   }
-  // Select which fields you want to retrieve (excluding password)
-  const projection = '-password';
 
-  const user = await Users.findOne({ email }).select(projection);
-
+  const user = await Users.findOne({ email }).select('-password');
   if (!user) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
   }
-  console.log(user);
   res.status(httpStatus.OK).send(user);
 });
 
 export const createUser = catchAsync(async (req, res) => {
-  const { firstName, lastName, email, password } = req.body;
+  const { firstName, lastName, email, password, role } = req.body;
 
   if (!firstName || !lastName || !email || !password) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'Missing fields');
   }
+
+  const existing = await Users.findOne({ email });
+  if (existing) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'User already exists');
+  }
+
+  const hash = bcrypt.hashSync(password, 10);
   const user = await Users.create({
-    firstName: firstName,
-    lastName: lastName,
-    email: email,
-    password: password,
-    description: null,
-    avatar: null,
-    image: null,
-    address: null,
-    birthdate: null,
-    gender: null,
+    firstName,
+    lastName,
+    email,
+    password: hash,
+    role: role === 'admin' ? 'admin' : 'user',
   });
 
-  if (!user) {
-    throw new ApiError(
-      httpStatus.INTERNAL_SERVER_ERROR,
-      'Failed to create user'
-    );
-  }
-  res.status(httpStatus.CREATED).send(user);
+  res.status(httpStatus.CREATED).send(publicUser(user));
 });
 
 export const updateUser = catchAsync(async (req, res) => {
-  // i need to change this function to update email or password
-  const { firstName, lastName, email, password } = req.body;
+  const { firstName, lastName, email, password, role } = req.body;
   const id = req.params.id;
+  const updates = {};
 
-  if (!firstName || !lastName || !email || !password) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Missing fields');
+  if (firstName) updates.firstName = firstName;
+  if (lastName) updates.lastName = lastName;
+  if (email) updates.email = email;
+  if (role) updates.role = role;
+  if (password) updates.password = bcrypt.hashSync(password, 10);
+
+  if (!Object.keys(updates).length) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'No fields to update');
   }
-  const user = await Users.findByIdAndUpdate(id, {
-    firstName: firstName,
-    lastName: lastName,
-    email: email,
-    password: password,
-  });
+
+  const user = await Users.findByIdAndUpdate(id, updates, { new: true }).select(
+    '-password'
+  );
 
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
@@ -90,11 +91,9 @@ export const updateUser = catchAsync(async (req, res) => {
 });
 
 export const updateUserInfo = catchAsync(async (req, res) => {
-  const { userId } = req.params;
-  const { firstName, lastName, description, avatarUrl } = req.body;
-
-  console.log('checking user id', userId);
-  console.log('checking first name', firstName);
+  const userId = req.params.id || req.params.userId;
+  const { firstName, lastName, description, avatarUrl, address, birthdate, gender } =
+    req.body;
 
   const updatedUser = await Users.findByIdAndUpdate(
     userId,
@@ -103,9 +102,12 @@ export const updateUserInfo = catchAsync(async (req, res) => {
       lastName,
       description,
       avatarUrl,
+      address,
+      birthdate,
+      gender,
     },
     { new: true, runValidators: true }
-  );
+  ).select('-password');
 
   if (!updatedUser) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
@@ -116,10 +118,6 @@ export const updateUserInfo = catchAsync(async (req, res) => {
 
 export const deleteUser = catchAsync(async (req, res) => {
   const id = req.params.id;
-
-  if (!id) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
-  }
   const user = await Users.findByIdAndDelete(id);
   if (!user) {
     throw new ApiError(httpStatus.NOT_FOUND, 'User not found');

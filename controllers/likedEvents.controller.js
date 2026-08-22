@@ -2,37 +2,56 @@ import ApiError from '../utils/ApiError.js';
 import catchAsync from '../utils/catchAsync.js';
 import httpStatus from 'http-status';
 import LikedEvents from '../models/likedEvents.model.js';
+import Events from '../models/events.model.js';
+import { findEventById } from '../utils/eventHelpers.js';
 
 export const addLikedEvent = catchAsync(async (req, res) => {
-  const { userId, eventId } = req.body;
+  const userId = req.user?.id || req.body.userId;
+  const { eventId } = req.body;
 
-  // Check if the event is already liked by the user
-  const existingLike = await LikedEvents.findOne({ userId, eventId });
-  if (existingLike) {
-    return res
-      .status(httpStatus.BAD_REQUEST)
-      .json({ message: 'Event already liked' });
+  if (!userId || !eventId) {
+    throw new ApiError(httpStatus.BAD_REQUEST, 'userId and eventId are required');
   }
 
-  // Add the liked event
-  const likedEvent = new LikedEvents({ userId, eventId });
-  await likedEvent.save();
+  const event = await findEventById(eventId);
+  if (!event) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Event not found');
+  }
 
-  // Increment the like counter for the event
-  await Events.findByIdAndUpdate(eventId, { $inc: { likes: 1 } });
+  const existingLike = await LikedEvents.findOne({ userId, eventId });
+  if (existingLike) {
+    await existingLike.deleteOne();
+    event.likes = Math.max(0, (event.likes || 0) - 1);
+    await event.save();
+    return res.status(httpStatus.OK).json({
+      liked: false,
+      likes: event.likes,
+      message: 'Event unliked',
+    });
+  }
 
-  res.status(httpStatus.CREATED).json(likedEvent);
+  await LikedEvents.create({ userId, eventId });
+  event.likes = (event.likes || 0) + 1;
+  await event.save();
+
+  res.status(httpStatus.CREATED).json({
+    liked: true,
+    likes: event.likes,
+    message: 'Event liked',
+  });
 });
 
 export const getLikedEvents = catchAsync(async (req, res) => {
   const { id } = req.params;
+  const likedEvents = await LikedEvents.find({ userId: id });
+  const eventIds = likedEvents.map((item) => item.eventId);
+  const events = await Events.find({ id: { $in: eventIds } });
 
-  const likedEvents = await LikedEvents.find({ userId: id }).populate(
-    'eventId'
-  );
+  res.status(httpStatus.OK).send(events);
+});
 
-  if (!likedEvents) {
-    throw new ApiError(httpStatus.NOT_FOUND, 'No liked events found');
-  }
-  res.status(httpStatus.OK).send(likedEvents);
+export const getLikeStatus = catchAsync(async (req, res) => {
+  const { userId, eventId } = req.params;
+  const existingLike = await LikedEvents.findOne({ userId, eventId });
+  res.status(httpStatus.OK).json({ liked: Boolean(existingLike) });
 });

@@ -9,45 +9,48 @@ import {
   loginValidationSchema,
   registerValidationSchema,
 } from '../utils/joiSchemas.js';
+import { isAdminUser } from '../middlewares/auth.js';
+
 config();
 
 const SECRET = process.env.JWT_SECRET;
 
+const signToken = (user) => {
+  const lastActivityTimestamp = Math.floor(Date.now() / 1000);
+  return jwt.sign({ id: user._id, lastActivityTimestamp }, SECRET, {
+    expiresIn: '2h',
+  });
+};
+
+const authPayload = (user, token, status = httpStatus.OK) => ({
+  status,
+  id: user._id,
+  email: user.email,
+  firstName: user.firstName,
+  lastName: user.lastName,
+  role: isAdminUser(user) ? 'admin' : user.role || 'user',
+  access_token: token,
+});
+
 export const login = catchAsync(async (req, res) => {
   const { error, value } = loginValidationSchema.validate(req.body);
   if (error) {
-    console.log({ error });
     throw new ApiError(httpStatus.BAD_REQUEST, error.details[0].message);
   }
 
   const { email, password } = value;
-
   const user = await Users.findOne({ email });
   if (!user) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid email or password');
   }
 
   const isMatch = bcrypt.compareSync(password, user.password);
   if (!isMatch) {
-    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid credentials');
+    throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid email or password');
   }
 
-  // Get the current timestamp in seconds
-  const lastActivityTimestamp = Math.floor(Date.now() / 1000);
-
-  // Generate a token with expiration time and last activity timestamp
-  const token = jwt.sign(
-    { id: user._id, lastActivityTimestamp },
-    SECRET,
-    { expiresIn: '2h' } // Token expires in 2 hours
-  );
-
-  res.status(httpStatus.OK).send({
-    status: httpStatus.OK,
-    id: user._id,
-    email: user.email,
-    access_token: token,
-  });
+  const token = signToken(user);
+  res.status(httpStatus.OK).send(authPayload(user, token));
 });
 
 export const register = catchAsync(async (req, res) => {
@@ -57,15 +60,12 @@ export const register = catchAsync(async (req, res) => {
   }
 
   const { firstName, lastName, email, password } = value;
-
   const userExists = await Users.findOne({ email });
   if (userExists) {
     throw new ApiError(httpStatus.BAD_REQUEST, 'User already exists');
   }
 
-  const salt = bcrypt.genSaltSync(10);
-  const hash = bcrypt.hashSync(password, salt);
-
+  const hash = bcrypt.hashSync(password, 10);
   const newUser = await Users.create({
     firstName,
     lastName,
@@ -73,69 +73,44 @@ export const register = catchAsync(async (req, res) => {
     password: hash,
   });
 
-  if (!newUser) {
-    throw new ApiError(
-      httpStatus.INTERNAL_SERVER_ERROR,
-      'Internal server error'
-    );
-  }
-
-  // Get the current timestamp in seconds
-  const lastActivityTimestamp = Math.floor(Date.now() / 1000);
-
-  // Generate a token with expiration time and last activity timestamp
-  const token = jwt.sign(
-    { id: newUser._id, lastActivityTimestamp },
-    SECRET,
-    { expiresIn: '2h' } // Token expires in 2 hours
-  );
-
-  res.status(httpStatus.CREATED).send({
-    id: newUser._id,
-    email: newUser.email,
-    firstName: newUser.firstName,
-    lastName: newUser.lastName,
-    access_token: token,
-  });
+  const token = signToken(newUser);
+  res.status(httpStatus.CREATED).send(authPayload(newUser, token, httpStatus.CREATED));
 });
 
 export const renewToken = catchAsync(async (req, res) => {
-  const token = req.headers.authorization.split(' ')[1]; // Assuming token is sent in the Authorization header
+  const header = req.headers.authorization;
+  if (!header?.startsWith('Bearer ')) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Authentication required');
+  }
 
-  console.log('Request Headers:', req.headers);
+  const token = header.split(' ')[1];
+  let decodedToken;
+  try {
+    decodedToken = jwt.verify(token, SECRET);
+  } catch {
+    throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid token');
+  }
 
-  jwt.verify(token, SECRET, (err, decodedToken) => {
-    if (err) {
-      return res
-        .status(httpStatus.UNAUTHORIZED)
-        .send({ message: 'Invalid token' });
-    }
+  const currentTime = Math.floor(Date.now() / 1000);
+  const maxInactiveTime = 15 * 60;
+  const isUserActive =
+    currentTime - decodedToken.lastActivityTimestamp <= maxInactiveTime;
 
-    const { lastActivityTimestamp } = decodedToken;
+  if (!isUserActive) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      'Session expired, please sign in again'
+    );
+  }
 
-    const currentTime = Math.floor(Date.now() / 1000); // Current timestamp in seconds
-    const maxInactiveTime = 15 * 60; // Max inactive time allowed: 15 minutes in seconds
+  const newToken = jwt.sign(
+    { id: decodedToken.id, lastActivityTimestamp: currentTime },
+    SECRET,
+    { expiresIn: '2h' }
+  );
 
-    const isUserActive = currentTime - lastActivityTimestamp <= maxInactiveTime;
-
-    if (isUserActive) {
-      // User is active, renew the token and send it back
-      const newToken = jwt.sign(
-        { id: decodedToken.id, lastActivityTimestamp: currentTime },
-        SECRET,
-        { expiresIn: '2h' }
-      );
-
-      // Send the new token to the client
-      res.status(httpStatus.OK).send({
-        status: httpStatus.OK,
-        access_token: newToken,
-      });
-    } else {
-      // User is not active
-      res
-        .status(httpStatus.UNAUTHORIZED)
-        .send({ message: 'User is not active, re-authentication required' });
-    }
+  res.status(httpStatus.OK).send({
+    status: httpStatus.OK,
+    access_token: newToken,
   });
 });

@@ -4,6 +4,7 @@
   "description": "",
   "scripts": {
     "dev": "nodemon server.js",
+    "start": "node server.js",
     "build:db": "node utils/buildDB.js"
   },
   "repository": {

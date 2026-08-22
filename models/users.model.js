@@ -1,21 +1,21 @@
 import mongoose from 'mongoose';
 
-export const UsersSchema = new mongoose.Schema({
-  firstName: String,
-  lastName: String,
-  email: String,
-  password: String,
-  description: String,
-  // <<<<<<< HEAD
-  // avatar: String,
-  // image: String,
-  // address: String,
-  // birthdate: Date,
-  // gender: String,
-  // =======
-  avatarUrl: String,
-  // >>>>>>> bd4e75f2b7bdae1f82f3e198e3111e6842339172
-});
+export const UsersSchema = new mongoose.Schema(
+  {
+    firstName: String,
+    lastName: String,
+    email: { type: String, unique: true, required: true },
+    password: { type: String, required: true },
+    description: { type: String, default: '' },
+    avatarUrl: { type: String, default: '' },
+    address: { type: String, default: '' },
+    birthdate: Date,
+    gender: { type: String, default: '' },
+    role: { type: String, enum: ['user', 'admin', 'organizer'], default: 'user' },
+    registeredEvents: { type: [String], default: [] },
+  },
+  { timestamps: true }
+);
 
 const Users = mongoose.model('Users', UsersSchema);
 

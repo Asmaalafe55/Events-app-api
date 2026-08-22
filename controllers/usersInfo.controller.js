@@ -21,14 +21,14 @@ export const updateDescription = catchAsync(async (req, res) => {
 });
 
 export const updateAvatar = catchAsync(async (req, res) => {
-  const { avatar } = req.body;
+  const { avatar, avatarUrl } = req.body;
   const id = req.params.id;
 
-  if (!avatar) {
+  if (!avatar && !avatarUrl) {
     throw new ApiError(httpStatus.NO_CONTENT, 'No Content');
   }
   const user = await Users.findByIdAndUpdate(id, {
-    avatar: avatar,
+    avatarUrl: avatarUrl || avatar,
   });
 
   if (!user) {
