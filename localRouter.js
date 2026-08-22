@@ -1,20 +1,18 @@
 import express from 'express';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import { config } from 'dotenv';
 import { localStore } from './utils/localStore.js';
+import { signToken as jwtSign, verifyToken } from './utils/jwt.js';
 
 config();
 
 const router = express.Router();
-const SECRET = process.env.JWT_SECRET || 'local-dev-secret';
 
 const signToken = (user) =>
-  jwt.sign(
-    { id: user._id, lastActivityTimestamp: Math.floor(Date.now() / 1000) },
-    SECRET,
-    { expiresIn: '2h' }
-  );
+  jwtSign({
+    id: user._id,
+    lastActivityTimestamp: Math.floor(Date.now() / 1000),
+  });
 
 const publicUser = (user) => {
   const { password, ...rest } = user;
@@ -25,7 +23,7 @@ const getCurrentUser = (req) => {
   const header = req.headers.authorization || '';
   if (!header.startsWith('Bearer ')) return null;
   try {
-    const decoded = jwt.verify(header.split(' ')[1], SECRET);
+    const decoded = verifyToken(header.split(' ')[1]);
     return localStore.users.find((item) => item._id === decoded.id) || null;
   } catch {
     return null;
@@ -514,7 +512,7 @@ router.post('/like', (req, res) => {
   let userId = req.body.userId;
   if (auth.startsWith('Bearer ')) {
     try {
-      userId = jwt.verify(auth.split(' ')[1], SECRET).id;
+      userId = verifyToken(auth.split(' ')[1]).id;
     } catch {
       return res.status(401).json({ message: 'Invalid or expired token' });
     }
@@ -565,12 +563,11 @@ router.post('/renew-token', (req, res) => {
     return res.status(401).json({ message: 'Authentication required' });
   }
   try {
-    const decoded = jwt.verify(auth.split(' ')[1], SECRET);
-    const token = jwt.sign(
-      { id: decoded.id, lastActivityTimestamp: Math.floor(Date.now() / 1000) },
-      SECRET,
-      { expiresIn: '2h' }
-    );
+    const decoded = verifyToken(auth.split(' ')[1]);
+    const token = jwtSign({
+      id: decoded.id,
+      lastActivityTimestamp: Math.floor(Date.now() / 1000),
+    });
     res.json({ status: 200, access_token: token });
   } catch {
     res.status(401).json({ message: 'Invalid token' });

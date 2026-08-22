@@ -1,7 +1,6 @@
 import Users from '../models/users.model.js';
 import ApiError from '../utils/ApiError.js';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import catchAsync from '../utils/catchAsync.js';
 import httpStatus from 'http-status';
 import { config } from 'dotenv';
@@ -10,16 +9,13 @@ import {
   registerValidationSchema,
 } from '../utils/joiSchemas.js';
 import { isAdminUser } from '../middlewares/auth.js';
+import { signToken as jwtSign, verifyToken } from '../utils/jwt.js';
 
 config();
 
-const SECRET = process.env.JWT_SECRET;
-
 const signToken = (user) => {
   const lastActivityTimestamp = Math.floor(Date.now() / 1000);
-  return jwt.sign({ id: user._id, lastActivityTimestamp }, SECRET, {
-    expiresIn: '2h',
-  });
+  return jwtSign({ id: user._id, lastActivityTimestamp });
 };
 
 const authPayload = (user, token, status = httpStatus.OK) => ({
@@ -90,7 +86,7 @@ export const renewToken = catchAsync(async (req, res) => {
   const token = header.split(' ')[1];
   let decodedToken;
   try {
-    decodedToken = jwt.verify(token, SECRET);
+    decodedToken = verifyToken(token);
   } catch {
     throw new ApiError(httpStatus.UNAUTHORIZED, 'Invalid token');
   }
@@ -107,11 +103,10 @@ export const renewToken = catchAsync(async (req, res) => {
     );
   }
 
-  const newToken = jwt.sign(
-    { id: decodedToken.id, lastActivityTimestamp: currentTime },
-    SECRET,
-    { expiresIn: '2h' }
-  );
+  const newToken = jwtSign({
+    id: decodedToken.id,
+    lastActivityTimestamp: currentTime,
+  });
 
   res.status(httpStatus.OK).send({
     status: httpStatus.OK,

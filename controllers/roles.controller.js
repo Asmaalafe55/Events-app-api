@@ -5,7 +5,7 @@ import LikedEvents from '../models/likedEvents.model.js';
 import ApiError from '../utils/ApiError.js';
 import catchAsync from '../utils/catchAsync.js';
 import httpStatus from 'http-status';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 const publicUser = (user) => {
   if (!user) return user;

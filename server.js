@@ -1,6 +1,8 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import router from './router.js';
 import localRouter from './localRouter.js';
 import { config } from 'dotenv';
@@ -11,6 +13,8 @@ import { errorConverter, errorHandler } from './middlewares/error.js';
 
 const app = express();
 config();
+mongoose.set('strictQuery', true);
+
 const port = process.env.PORT || 4000;
 
 const allowedOrigins = [
@@ -25,17 +29,43 @@ const allowedOrigins = [
 ].filter(Boolean);
 
 app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
+
+app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error('Origin not allowed by CORS'));
+        callback(null, false);
       }
     },
     credentials: true,
   })
 );
+
+app.use(express.json({ limit: '100kb' }));
+app.use(express.urlencoded({ extended: false, limit: '100kb' }));
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use('/api/login', loginLimiter);
+app.use('/api/register', loginLimiter);
+app.use('/api', apiLimiter);
 
 app.get('/health', (req, res) => {
   res.json({
@@ -44,9 +74,6 @@ app.get('/health', (req, res) => {
     mode: isLocalMode() ? 'local' : 'mongo',
   });
 });
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
 const username = process.env.USERNAME;
 const password = process.env.PASSWORD;

@@ -1,12 +1,10 @@
-import jwt from 'jsonwebtoken';
 import httpStatus from 'http-status';
 import { config } from 'dotenv';
 import Users from '../models/users.model.js';
 import ApiError from '../utils/ApiError.js';
+import { verifyToken } from '../utils/jwt.js';
 
 config();
-
-const SECRET = process.env.JWT_SECRET;
 const adminEmails = (process.env.ADMIN_EMAILS || '')
   .split(',')
   .map((email) => email.trim().toLowerCase())
@@ -20,7 +18,7 @@ export const auth = (req, res, next) => {
     }
 
     const token = header.split(' ')[1];
-    const decoded = jwt.verify(token, SECRET);
+    const decoded = verifyToken(token);
     req.user = decoded;
     next();
   } catch (error) {
@@ -36,7 +34,7 @@ export const optionalAuth = (req, res, next) => {
     const header = req.headers.authorization;
     if (header?.startsWith('Bearer ')) {
       const token = header.split(' ')[1];
-      req.user = jwt.verify(token, SECRET);
+      req.user = verifyToken(token);
     }
   } catch {
     req.user = undefined;

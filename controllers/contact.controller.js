@@ -4,20 +4,36 @@ import catchAsync from '../utils/catchAsync.js';
 import httpStatus from 'http-status';
 import { config } from 'dotenv';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 config();
+
+const templatePath = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../templates/contactTemplate.html'
+);
+
+const escapeHtml = (value = '') =>
+  String(value).replace(/[&<>"']/g, (char) =>
+    ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    }[char])
+  );
 
 export const contact = catchAsync(async (req, res, next) => {
   try {
     const { name, email, message } = req.body;
 
-    const templatePath = 'templates/contactTemplate.html';
-
     const htmlContent = fs
       .readFileSync(templatePath, 'utf-8')
-      .replace('{{name}}', name)
-      .replace('{{email}}', email)
-      .replace('{{message}}', message);
+      .replaceAll('{{name}}', escapeHtml(name))
+      .replaceAll('{{email}}', escapeHtml(email))
+      .replaceAll('{{message}}', escapeHtml(message));
 
     const mailOptions = {
       from: process.env.GMAIL_EMAIL,
@@ -29,19 +45,18 @@ export const contact = catchAsync(async (req, res, next) => {
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         console.log(error);
-        throw new ApiError(
-          httpStatus.INTERNAL_SERVER_ERROR,
-          'Error sending email'
+        return next(
+          new ApiError(
+            httpStatus.INTERNAL_SERVER_ERROR,
+            'Error sending email'
+          )
         );
-      } else {
-        console.log('Email sent:' + info.response);
-        res.status(httpStatus.OK).json({
-          message: 'Your message has been sent!',
-          success: true,
-          data: mailOptions,
-          email,
-        });
       }
+      console.log('Email sent:' + info.response);
+      res.status(httpStatus.OK).json({
+        message: 'Your message has been sent!',
+        success: true,
+      });
     });
   } catch (error) {
     next(error);
